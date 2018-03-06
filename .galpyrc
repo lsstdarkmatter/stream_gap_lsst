@@ -1,0 +1,11 @@
+[plot]
+seaborn-bovy-defaults = True
+
+[astropy]
+astropy-coords = True
+astropy-units = True
+
+[normalization]
+vo = 220.
+ro = 8.
+
