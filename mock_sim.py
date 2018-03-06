@@ -2,7 +2,7 @@ import astropy.table as atpy
 import read_girardi
 import numpy as np
 import scipy.spatial
-betw  = lambda x,x1,x2:(x>x1)&(x<x2)
+betw  = lambda x,x1,x2:(x>=x1)&(x<=x2)
 
 def getMagErr(mag, filt, survey='LSST'):
     if survey == 'LSST':
@@ -48,15 +48,19 @@ def get_mock_density(distance, isoname, survey,
     survey
     """
     minerr = 0.01
-    dat = atpy.Table().read(mockfile)
-    g, r = dat['g'], dat['r']
     dm = 5*np.log10(distance*1e3)-5
     iso = read_girardi.read_girardi(isoname)
     xind = iso['stage']<=3
     r_mag_limit = getMagLimit('r',survey)
     gcurve, rcurve = getIsoCurve(iso)
     gcurve,rcurve = [ _+ dm  for _ in [gcurve,rcurve]]
-    grgrid,rgrid = np.mgrid[-0.3:1.2:0.005,15:28:0.005]
+    mincol,maxcol=-0.3,1.2
+    minmag,maxmag=15,28
+    colbin=0.01
+    magbin=0.01
+    grgrid,rgrid = np.mgrid[mincol:maxcol:colbin,minmag:maxmag:magbin]
+    colbins = np.arange(mincol,maxcol,colbin)
+    magbins = np.arange(minmag,maxmag,magbin)
     ggrid = grgrid+rgrid
     arr0 = np.array([(ggrid).flatten(),rgrid.flatten()]).T
     arr = np.array([gcurve,rcurve]).T
@@ -67,8 +71,14 @@ def get_mock_density(distance, isoname, survey,
     gerr,rerr = [np.maximum(_,minerr) for _ in [gerr,rerr]]
     dg = ggrid-gcurve[xind].reshape(ggrid.shape)
     dr = rgrid-rcurve[xind].reshape(rgrid.shape)
-    #1/0
+    
     thresh = 2 # 2 sigma
-    xind = (np.abs(dg/gerr)<2)&(np.abs(dr/rerr)<2)
-
-    return xind
+    
+    mask = (np.abs(dg/gerr)<2)&(np.abs(dr/rerr)<2)
+    dat = atpy.Table().read(mockfile)
+    g, r = dat['g'], dat['r']
+    colid = np.digitize(g-r,colbins)-1
+    magid = np.digitize(g-r,magbins)-1
+    xind = betw(colid,0,grgrid.shape[0]-1)&betw(magid,0,grgrid.shape[1])& (
+        r<r_mag_limit)
+    return xind.sum()/mockarea
