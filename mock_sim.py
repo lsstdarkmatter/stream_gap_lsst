@@ -54,14 +54,28 @@ def getMagErrVec(mag, filt, survey='LSST'):
 
 
 def getMagLimit(filt, survey='LSST'):
+    "A sophisticated calculation of LSST magntude limit"
     return 27
 
 
-def getIsoCurve(iso):
+def getIsoCurve(iso, magstep = 0.01):
+    """
+    Returns the list of points sampling along the isochrone
+    
+    Arguments:
+    ---------
+    iso: dict
+        Dictionary with the Girardi isochrone
+    magstep: float(optional)
+        The step in magntidues along the isochrone
+    Returns:
+    -------
+    gcurve,rcurve: Tuple of numpy arrays
+        The tupe of arrays of magnitudes in g and r going along the isochrone
+    """
     mini = iso['M_ini']
     g = iso['DES-g']
     r = iso['DES-r']
-    magstep = 0.01
     res_g, res_r = [], []
     for i in range(len(mini)-1):
         l_g, l_r = g[i], r[i]
@@ -76,11 +90,28 @@ def getIsoCurve(iso):
 
 
 def get_mock_density(distance, isoname, survey,
-                     mockfile='stream_gap_mock.fits', mockarea=100):
+                     mockfile='stream_gap_mock.fits', mockarea=100,
+                     minerr=0.01):
     """
-    Distance in kpc,
-    isochrone name
-    survey
+    Compute the density of background stars within the isocrhone mask 
+    of the stellar population at a given distance
+
+    Arguments:
+    ---------
+    distance: float
+        Distance to the stream in kpc
+    isoname: str
+        The filename with the isochrone
+    survey: str
+        The name of the survey (currently only LSST)
+    mockfile: str
+        The name of the file with the mock galaxia data
+    mockarea: float
+        The area in square degrees used for the mockfile generation
+    Returns:
+    --------
+    Stellar denstiy in stars/sq. deg
+
     """
     minerr = 0.01
     dm = 5*np.log10(distance*1e3)-5
