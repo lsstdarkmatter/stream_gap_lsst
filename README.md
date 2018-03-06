@@ -9,4 +9,4 @@ Contributors
 
 * Sergey Koposov - [@segasai](https://github.com/segasai)
 * Ting Li - [@sazabi4](https://github.com/sazabi4)
-* Jo Bovy - [@jobovy](https://github.com/sjobovy)
+* Jo Bovy - [@jobovy](https://github.com/jobovy)
