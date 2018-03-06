@@ -90,7 +90,13 @@ def get_mock_density(distance, isoname, survey,
     return xind.sum()/mockarea
 
 
-def combine(mu, distance_kpc, survey, width_pc):
+def predict_gap_depths(mu, distance_kpc, survey, width_pc):
+    """Arguments:
+    mu -- surfgace brightness  mag/sq.arcsec^2
+    distance_kpc -- distance in kpc
+    survey -- strign
+    width_pc -- width of the stream in pc)
+    """
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
     mgrid = 10**np.linspace(5.5,8.5,10)
     gap_depths = np.array([sss.gap_depth(_) for _ in mgrid])
@@ -101,11 +107,13 @@ def combine(mu, distance_kpc, survey, width_pc):
     dens_stream = snc.nstar_cal(mu, distance_kpc, maglim, frac = 0.6)
     dens_bg = get_mock_density(distance_kpc, isoname, survey,
                          mockfile='stream_gap_mock.fits', mockarea=100)
+    print (dens_bg,dens_stream)
     N = len(gap_sizes_deg)
     detfracs  = np.zeros(N)
     for i in range(N):
-        nbg = dens_bg * width_deg*gap_sizes_deg[i]*2
-        nstr = dens_stream * width_deg*gap_sizes_deg[i]*2
+        nbg = dens_bg * width_deg * gap_sizes_deg[i]*2
+        nstr = dens_stream * width_deg * gap_sizes_deg[i]*2
+        print ('Nstream', nstr,'Nbg', nbg)
         detfrac = 3*np.sqrt(nbg+nstr)/nstr
         detfracs[i]=detfrac
     return (mgrid, gap_depths,detfracs)
