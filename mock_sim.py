@@ -2,6 +2,12 @@ import astropy.table as atpy
 import read_girardi
 import numpy as np
 import scipy.spatial
+import astropy.units as auni
+import stream_num_cal as snc
+import simple_stream_model as sss 
+import matplotlib.pyplot as plt
+
+
 betw  = lambda x,x1,x2:(x>=x1)&(x<=x2)
 
 def getMagErr(mag, filt, survey='LSST'):
@@ -20,7 +26,7 @@ def getMagErrVec(mag, filt, survey='LSST'):
 
 
 def getMagLimit(filt, survey='LSST'):
-    return 28
+    return 27
 
 def getIsoCurve(iso):
     mini = iso['M_ini']
@@ -82,3 +88,25 @@ def get_mock_density(distance, isoname, survey,
     xind = betw(colid,0,grgrid.shape[0]-1)&betw(magid,0,grgrid.shape[1])& (
         r<r_mag_limit)
     return xind.sum()/mockarea
+
+
+def combine(mu, distance_kpc, survey, width_pc):
+    width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
+    mgrid = 10**np.linspace(5.5,8.5,10)
+    gap_depths = np.array([sss.gap_depth(_) for _ in mgrid])
+    gap_sizes_deg = np.array([sss.gap_size(_,dist=distance_kpc*auni.kpc)/auni.deg for _ in mgrid])
+    #gap_sizes_deg = np.rad2deg(gap_size/ distance/1e3)
+    isoname = 'iso_a12.0_z0.00020.dat'
+    maglim = getMagLimit('r', survey)
+    dens_stream = snc.nstar_cal(mu, distance_kpc, maglim, frac = 0.6)
+    dens_bg = get_mock_density(distance_kpc, isoname, survey,
+                         mockfile='stream_gap_mock.fits', mockarea=100)
+    N = len(gap_sizes_deg)
+    detfracs  = np.zeros(N)
+    for i in range(N):
+        nbg = dens_bg * width_deg*gap_sizes_deg[i]*2
+        nstr = dens_stream * width_deg*gap_sizes_deg[i]*2
+        detfrac = 3*np.sqrt(nbg+nstr)/nstr
+        detfracs[i]=detfrac
+    return (mgrid, gap_depths,detfracs)
+    #plt.plot(mgrid, detfracs)
