@@ -7,6 +7,6 @@ experiments could be to stellar-stream density perturbations.
 Contributors
 -------------
 
-* Sergey Koposov - @segasai
-* Ting Li - @sazabi4
-* Jo Bovy - @jobovy
+* Sergey Koposov - [@segasai](https://github.com/segasai)
+* Ting Li - [@sazabi4](https://github.com/sazabi4)
+* Jo Bovy - [@jobovy](https://github.com/sjobovy)
