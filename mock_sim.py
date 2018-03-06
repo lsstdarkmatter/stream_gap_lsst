@@ -12,6 +12,20 @@ def betw(x, x1, x2): return (x >= x1) & (x <= x2)
 
 
 def getMagErr(mag, filt, survey='LSST'):
+    """
+    Parameters
+    ----------
+    mag: float
+        Magnitude
+    filt: str
+        Filter
+    survey: str
+        Survey
+    Returns:
+    -------
+        err: float
+        Magnitude uncertainty
+    """
     if survey == 'LSST':
         import photErrorModel as pem
         lem = pem.LSSTErrorModel()
@@ -21,6 +35,18 @@ def getMagErr(mag, filt, survey='LSST'):
 
 
 def getMagErrVec(mag, filt, survey='LSST'):
+    """ 
+    Parameters:
+    ----------
+    mag: numpy
+        The array of magnitudes
+    filt: str
+        The filter of observations
+    Returns:
+    err: numpy array
+        The magnitude uncertainty
+    
+    """
     maggrid = np.linspace(15, 28, 1000)
     res = [getMagErr(m, filt, survey) for m in maggrid]
     res = scipy.interpolate.UnivariateSpline(maggrid, res, s=0)(mag)
