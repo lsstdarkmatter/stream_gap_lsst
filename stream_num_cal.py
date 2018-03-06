@@ -1,6 +1,8 @@
 import astropy.io.fits as pyfits
 import numpy as np
 
+data = pyfits.open('simulated_dwarf_1e6.fits')[1].data
+
 def lum_cal(Mv):
     msun = 4.83
     return 2.512 ** (msun - Mv)
@@ -24,8 +26,7 @@ def nstar_cal(mu, distance, maglim, frac = 0.6):
     mtl = 1.4 # mass to light ratio is 1.4 for this isochrone
     mstar = lstar * mtl
 
-    data = pyfits.open('simulated_dwarf_1e6.fits')[1].data
-    nstar = sum((data['g']+dm) < maglim) * (mstar/1e6) * frac
+    nstar = np.sum((data['g']+dm) < maglim) * (mstar/1e6) * frac
 
     return nstar
 
