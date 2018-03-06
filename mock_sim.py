@@ -96,6 +96,10 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc):
     distance_kpc -- distance in kpc
     survey -- strign
     width_pc -- width of the stream in pc)
+    Returns:
+    the array of halo masses
+    the array of theoretically predicted gap depths
+    the array of potentially observable gap depths
     """
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
     mgrid = 10**np.linspace(5.5,8.5,10)
