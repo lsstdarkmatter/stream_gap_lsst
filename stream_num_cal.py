@@ -5,7 +5,7 @@ data = pyfits.open('simulated_dwarf_1e6.fits')[1].data
 
 def lum_cal(Mv):
     msun = 4.83
-    return 2.512 ** (msun - Mv)
+    return 10.**(0.4*(msun - Mv))
 
 
 def nstar_cal(mu, distance, maglim, frac = 0.6):
