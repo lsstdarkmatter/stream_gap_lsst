@@ -161,36 +161,43 @@ def get_mock_density(distance, isoname, survey,
     return bgdens
 
 def predict_gap_depths(mu, distance_kpc, survey, width_pc):
-    """Arguments:
-    mu -- surfgace brightness  mag/sq.arcsec^2
-    distance_kpc -- distance in kpc
-    survey -- strign
-    width_pc -- width of the stream in pc)
-    Returns:
-    the array of halo masses
-    the array of theoretically predicted gap depths
-    the array of potentially observable gap depths
     """
+    Arguments:
+    ---------
+    mu: real
+        Surface brightness of the stream in mag/sq.arcsec^2
+    distance_kpc: real
+        Distance to the stream in kpc
+    survey: str
+        Name of the survey
+    width_pc: real
+        The width of the stream in pc
+    Returns:
+    ---
+    (masses,tdepths,odepths): Tuple of 3 numpy arrays
+        The array of halo masses
+        The array of theoretically predicted gap depths
+        The array of potentially observable gap depths
+    """
+    isoname = 'iso_a12.0_z0.00020.dat'
+    mockarea = 100
+    mockfile = 'stream_gap_mock.fits'
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
     mgrid = 10**np.linspace(5.5, 8.5, 10)
     gap_depths = np.array([sss.gap_depth(_) for _ in mgrid])
     gap_sizes_deg = np.array(
         [sss.gap_size(_, dist=distance_kpc*auni.kpc)/auni.deg for _ in mgrid])
-    #gap_sizes_deg = np.rad2deg(gap_size/ distance/1e3)
-    isoname = 'iso_a12.0_z0.00020.dat'
     maglim = getMagLimit('r', survey)
-    dens_stream = snc.nstar_cal(mu, distance_kpc, maglim, frac=0.6)
+    dens_stream = snc.nstar_cal(mu, distance_kpc, maglim)
     dens_bg = get_mock_density(distance_kpc, isoname, survey,
-                               mockfile='stream_gap_mock.fits', mockarea=100)
-    print(dens_bg, dens_stream)
+                               mockfile=mockfile, mockarea=mockarea)
+    print('Background/stream density [stars/sq.deg]', dens_bg, dens_stream)
     N = len(gap_sizes_deg)
     detfracs = np.zeros(N)
     for i in range(N):
-        nbg = dens_bg * width_deg * gap_sizes_deg[i]*2
-        nstr = dens_stream * width_deg * gap_sizes_deg[i]*2
+        nbg = dens_bg * 2*width_deg * gap_sizes_deg[i]
+        nstr = dens_stream * 2*width_deg * gap_sizes_deg[i]
         print('Nstream', nstr, 'Nbg', nbg)
         detfrac = 3*np.sqrt(nbg+nstr)/nstr
         detfracs[i] = detfrac
     return (mgrid, gap_depths, detfracs)
-    #plt.plot(mgrid, detfracs)
-    
