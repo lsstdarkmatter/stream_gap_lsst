@@ -78,7 +78,7 @@ def get_mock_density(distance, isoname, survey,
     dat = atpy.Table().read(mockfile)
     g, r = dat['g'], dat['r']
     colid = np.digitize(g-r,colbins)-1
-    magid = np.digitize(g-r,magbins)-1
+    magid = np.digitize(r,magbins)-1
     xind = betw(colid,0,grgrid.shape[0]-1)&betw(magid,0,grgrid.shape[1])& (
         r<r_mag_limit)
     return xind.sum()/mockarea
