@@ -113,21 +113,29 @@ def get_mock_density(distance, isoname, survey,
     Stellar denstiy in stars/sq. deg
 
     """
-    minerr = 0.01
+    minerr = 0.02
     dm = 5*np.log10(distance*1e3)-5
     iso = read_girardi.read_girardi(isoname)
-    xind = iso['stage'] <= 3
+    xind = iso['stage'] <= 3 # cut the horizontal branch 
+    for k,v in iso.items():
+        iso[k] = v[xind]
+
     r_mag_limit = getMagLimit('r', survey)
+
     gcurve, rcurve = getIsoCurve(iso)
     gcurve, rcurve = [_ + dm for _ in [gcurve, rcurve]]
+
     mincol, maxcol = -0.3, 1.2
-    minmag, maxmag = 15, 28
+    minmag, maxmag = 17, 28
     colbin = 0.01
     magbin = 0.01
+
     grgrid, rgrid = np.mgrid[mincol:maxcol:colbin, minmag:maxmag:magbin]
+    ggrid = grgrid + rgrid
+
     colbins = np.arange(mincol, maxcol, colbin)
     magbins = np.arange(minmag, maxmag, magbin)
-    ggrid = grgrid+rgrid
+
     arr0 = np.array([(ggrid).flatten(), rgrid.flatten()]).T
     arr = np.array([gcurve, rcurve]).T
     tree = scipy.spatial.KDTree(arr)
@@ -135,20 +143,22 @@ def get_mock_density(distance, isoname, survey,
     gerr = getMagErrVec(ggrid.flatten(), 'g', survey).reshape(ggrid.shape)
     rerr = getMagErrVec(rgrid.flatten(), 'r', survey).reshape(rgrid.shape)
     gerr, rerr = [np.maximum(_, minerr) for _ in [gerr, rerr]]
-    dg = ggrid-gcurve[xind].reshape(ggrid.shape)
-    dr = rgrid-rcurve[xind].reshape(rgrid.shape)
 
-    thresh = 2  # 2 sigma
+    dg = ggrid - gcurve[xind].reshape(ggrid.shape)
+    dr = rgrid - rcurve[xind].reshape(rgrid.shape)
 
-    mask = (np.abs(dg/gerr) < 2) & (np.abs(dr/rerr) < 2)
+    thresh = 2  # how many sigma away from the isochrone we select
+
+    mask = (np.abs(dg/gerr) < thresh) & (np.abs(dr/rerr) < thresh)
     dat = atpy.Table().read(mockfile)
     g, r = dat['g'], dat['r']
-    colid = np.digitize(g-r, colbins)-1
+    colid = np.digitize(g - r, colbins)-1
     magid = np.digitize(r, magbins)-1
     xind = betw(colid, 0, grgrid.shape[0]-1) & betw(magid, 0, grgrid.shape[1]) & (
         r < r_mag_limit)
-    return xind.sum()/mockarea
-
+    nbgstars = xind.sum()
+    bgdens = nbgstars/mockarea
+    return bgdens
 
 def predict_gap_depths(mu, distance_kpc, survey, width_pc):
     """Arguments:
@@ -183,3 +193,4 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc):
         detfracs[i] = detfrac
     return (mgrid, gap_depths, detfracs)
     #plt.plot(mgrid, detfracs)
+    
