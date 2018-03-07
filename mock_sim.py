@@ -160,7 +160,7 @@ def get_mock_density(distance, isoname, survey,
     bgdens = nbgstars/mockarea
     return bgdens
 
-def predict_gap_depths(mu, distance_kpc, survey, width_pc):
+def predict_gap_depths(mu, distance_kpc, survey, width_pc, maglim=None):
     """
     Arguments:
     ---------
@@ -184,20 +184,34 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc):
     mockfile = 'stream_gap_mock.fits'
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
     mgrid = 10**np.linspace(5.5, 8.5, 10)
-    gap_depths = np.array([sss.gap_depth(_) for _ in mgrid])
+    mgrid7 = mgrid / 1e7
+    gap_depths = np.array([1 - sss.gap_depth(_) for _ in mgrid7])
+    # We do 1-gap_depth() because sss_gap_depth returns the height of 
+    # the gap from zero rather than from 1.
+    
     gap_sizes_deg = np.array(
-        [sss.gap_size(_, dist=distance_kpc*auni.kpc)/auni.deg for _ in mgrid])
-    maglim = getMagLimit('r', survey)
+        [sss.gap_size(_, dist=distance_kpc*auni.kpc)/auni.deg for _ in mgrid7])
+    
+    if maglim is None:
+        maglim = getMagLimit('r', survey)
     dens_stream = snc.nstar_cal(mu, distance_kpc, maglim)
     dens_bg = get_mock_density(distance_kpc, isoname, survey,
                                mockfile=mockfile, mockarea=mockarea)
     print('Background/stream density [stars/sq.deg]', dens_bg, dens_stream)
+    max_gap = 10 # this the maximum gap length that we consider reasonable
     N = len(gap_sizes_deg)
     detfracs = np.zeros(N)
     for i in range(N):
-        nbg = dens_bg * 2*width_deg * gap_sizes_deg[i]
-        nstr = dens_stream * 2*width_deg * gap_sizes_deg[i]
+        area = 2 * width_deg * gap_sizes_deg[i]
+        # twice the width and the length of the gap 
+        nbg = dens_bg * area
+        nstr = dens_stream * area
         print('Nstream', nstr, 'Nbg', nbg)
-        detfrac = 3*np.sqrt(nbg+nstr)/nstr
+        detfrac = 3 * np.sqrt(nbg + nstr) / nstr
+        # this is smallest gap depth that we could detect 
+        # we the poisson noise on density is sqrt(nbg+nstr) 
+        # and the stream density (per bin) is nstr 
         detfracs[i] = detfrac
+        if gap_sizes_deg[i]>max_gap:
+            detfracs[i]=np.nan
     return (mgrid, gap_depths, detfracs)
