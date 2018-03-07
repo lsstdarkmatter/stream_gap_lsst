@@ -53,9 +53,12 @@ def getMagErrVec(mag, filt, survey='LSST'):
     return res
 
 
-def getMagLimit(filt, survey='LSST'):
+def getMagLimit(filt, survey='LSST', maxerr=0.3):
     "A sophisticated calculation of LSST magntude limit"
-    return 27
+    xgrid = np.linspace(15,28,1000)
+    err=getMagErrVec(xgrid,filt,survey)
+    xid=np.argmax(err*(err<maxerr))
+    return xgrid[xid]
 
 
 def getIsoCurve(iso, magstep = 0.01):
@@ -91,7 +94,8 @@ def getIsoCurve(iso, magstep = 0.01):
 
 def get_mock_density(distance, isoname, survey,
                      mockfile='stream_gap_mock.fits', mockarea=100,
-                     minerr=0.01):
+                     minerr=0.01,
+                     maglim_g=None, maglim_r=None):
     """
     Compute the density of background stars within the isocrhone mask 
     of the stellar population at a given distance
@@ -113,19 +117,19 @@ def get_mock_density(distance, isoname, survey,
     Stellar denstiy in stars/sq. deg
 
     """
-    minerr = 0.02
+    minerr = 0.02 # we do not allow the uncertainty to be lower than that
     dm = 5*np.log10(distance*1e3)-5
     iso = read_girardi.read_girardi(isoname)
     xind = iso['stage'] <= 3 # cut the horizontal branch 
     for k,v in iso.items():
         iso[k] = v[xind]
 
-    r_mag_limit = getMagLimit('r', survey)
+    #r_mag_limit = getMagLimit('r', survey)
 
     gcurve, rcurve = getIsoCurve(iso)
     gcurve, rcurve = [_ + dm for _ in [gcurve, rcurve]]
 
-    mincol, maxcol = -0.3, 1.2
+    mincol, maxcol = -0., 1.5
     minmag, maxmag = 17, 28
     colbin = 0.01
     magbin = 0.01
@@ -140,6 +144,7 @@ def get_mock_density(distance, isoname, survey,
     arr = np.array([gcurve, rcurve]).T
     tree = scipy.spatial.KDTree(arr)
     D, xind = tree.query(arr0)
+
     gerr = getMagErrVec(ggrid.flatten(), 'g', survey).reshape(ggrid.shape)
     rerr = getMagErrVec(rgrid.flatten(), 'r', survey).reshape(rgrid.shape)
     gerr, rerr = [np.maximum(_, minerr) for _ in [gerr, rerr]]
@@ -149,18 +154,20 @@ def get_mock_density(distance, isoname, survey,
 
     thresh = 2  # how many sigma away from the isochrone we select
 
-    mask = (np.abs(dg/gerr) < thresh) & (np.abs(dr/rerr) < thresh)
+    mask = (np.abs(dg/gerr) < thresh) & (np.abs(dr/rerr) < thresh) & (rgrid<maglim_r)& (ggrid<maglim_g)
     dat = atpy.Table().read(mockfile)
     g, r = dat['g'], dat['r']
     colid = np.digitize(g - r, colbins)-1
     magid = np.digitize(r, magbins)-1
-    xind = betw(colid, 0, grgrid.shape[0]-1) & betw(magid, 0, grgrid.shape[1]) & (
-        r < r_mag_limit)
-    nbgstars = xind.sum()
+    xind = betw(colid, 0, grgrid.shape[0]-1) & betw(magid, 0, grgrid.shape[1])
+    xmask = np.zeros(len(g),dtype=bool)
+    xmask[xind] = mask[colid[xind],magid[xind]]
+    nbgstars = xmask.sum()
     bgdens = nbgstars/mockarea
     return bgdens
 
-def predict_gap_depths(mu, distance_kpc, survey, width_pc, maglim=None):
+def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
+                       timpact=1):
     """
     Arguments:
     ---------
@@ -172,6 +179,8 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc, maglim=None):
         Name of the survey
     width_pc: real
         The width of the stream in pc
+    timpact: real
+        The time of impact in Gyr
     Returns:
     ---
     (masses,tdepths,odepths): Tuple of 3 numpy arrays
@@ -183,22 +192,28 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc, maglim=None):
     mockarea = 100
     mockfile = 'stream_gap_mock.fits'
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
-    mgrid = 10**np.linspace(5.5, 8.5, 10)
+    mgrid = 10**np.linspace(5., 8.5, 10)
     mgrid7 = mgrid / 1e7
-    gap_depths = np.array([1 - sss.gap_depth(_) for _ in mgrid7])
+    gap_depths = np.array([1 - sss.gap_depth(_,timpact=timpact) for _ in mgrid7])
     # We do 1-gap_depth() because sss_gap_depth returns the height of 
     # the gap from zero rather than from 1.
     
     gap_sizes_deg = np.array(
-        [sss.gap_size(_, dist=distance_kpc*auni.kpc)/auni.deg for _ in mgrid7])
+        [sss.gap_size(_, dist=distance_kpc * auni.kpc, timpact=timpact) /
+         auni.deg for _ in mgrid7])
     
     if maglim is None:
-        maglim = getMagLimit('r', survey)
-    dens_stream = snc.nstar_cal(mu, distance_kpc, maglim)
+        maglim_g = getMagLimit('g', survey)
+        maglim_r = getMagLimit('r', survey)
+    else:
+        maglim_g,maglim_r=[maglim]*2
+    dens_stream = snc.nstar_cal(mu, distance_kpc, maglim_g=maglim_g,
+                                maglim_r=maglim_r)
     dens_bg = get_mock_density(distance_kpc, isoname, survey,
-                               mockfile=mockfile, mockarea=mockarea)
+                               mockfile=mockfile, mockarea=mockarea,
+                               maglim_g=maglim_g,maglim_r=maglim_r)
     print('Background/stream density [stars/sq.deg]', dens_bg, dens_stream)
-    max_gap = 10 # this the maximum gap length that we consider reasonable
+    max_gap_deg = 10 # this the maximum gap length that we consider reasonable
     N = len(gap_sizes_deg)
     detfracs = np.zeros(N)
     for i in range(N):
@@ -207,11 +222,11 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc, maglim=None):
         nbg = dens_bg * area
         nstr = dens_stream * area
         print('Nstream', nstr, 'Nbg', nbg)
-        detfrac = 3 * np.sqrt(nbg + nstr) / nstr
+        detfrac = 5 * np.sqrt(nbg + nstr) / nstr
         # this is smallest gap depth that we could detect 
         # we the poisson noise on density is sqrt(nbg+nstr) 
         # and the stream density (per bin) is nstr 
         detfracs[i] = detfrac
-        if gap_sizes_deg[i]>max_gap:
+        if gap_sizes_deg[i]>max_gap_deg:
             detfracs[i]=np.nan
     return (mgrid, gap_depths, detfracs)
