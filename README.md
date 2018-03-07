@@ -20,5 +20,5 @@ This code has the following dependencies:
 * [astropy](https://github.com/astropy/astropy)
 * [galpy](https://github.com/jobovy/galpy)
 * [ugali](https://github.com/DarkEnergySurvey/ugali)
-* [ebf](http://ebfformat.sourceforge.net/build/intro.html)
+* [ebf](https://github.com/segasai/ebfpy)
 * Some code from the [DESC](https://github.com/LSSTDESC) to run the photometric-error code
