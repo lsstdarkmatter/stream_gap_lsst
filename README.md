@@ -22,3 +22,12 @@ This code has the following dependencies:
 * [ugali](https://github.com/DarkEnergySurvey/ugali)
 * [ebf](http://ebfformat.sourceforge.net/build/intro.html)
 * Some code from the [DESC](https://github.com/LSSTDESC) to run the photometric-error code
+
+Key plot
+--------
+
+The key plot from this hack can be produced by
+```
+import mock_sim
+mock_sim.make_plot('figure.png')
+```
