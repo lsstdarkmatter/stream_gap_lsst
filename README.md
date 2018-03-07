@@ -31,3 +31,8 @@ The key plot from this hack can be produced by
 import mock_sim
 mock_sim.make_plot('figure.png')
 ```
+
+
+which at the time of writing produces the following figure:
+
+![LSST stream gap detection limits](halo_limit1.png)
