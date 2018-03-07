@@ -6,7 +6,8 @@ import astropy.units as auni
 import stream_num_cal as snc
 import simple_stream_model as sss
 import matplotlib.pyplot as plt
-
+import scipy.interpolate
+import scipy.optimize
 
 def betw(x, x1, x2): return (x >= x1) & (x <= x2)
 
@@ -192,7 +193,7 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
     mockarea = 100
     mockfile = 'stream_gap_mock.fits'
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
-    mgrid = 10**np.linspace(5., 8.5, 10)
+    mgrid = 10**np.linspace(3., 10, 100)
     mgrid7 = mgrid / 1e7
     gap_depths = np.array([1 - sss.gap_depth(_,timpact=timpact) for _ in mgrid7])
     # We do 1-gap_depth() because sss_gap_depth returns the height of 
@@ -230,3 +231,22 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
         if gap_sizes_deg[i]>max_gap_deg:
             detfracs[i]=np.nan
     return (mgrid, gap_depths, detfracs)
+
+def make_plot():
+    mus = [30,31,32,33]
+    distances = [10,20,40]
+    for distance in distances:
+        ret = []
+        for mu in mus:
+            mass, gapt, gapo = predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=None,
+                                              timpact=0.5)
+            xind = np.isfinite(gapo/gapt)
+            II1 = scipy.interpolate.UnivariateSpline(np.log10(mass)[xind],(gapo/gapt-1)[xind],s=0)
+            R=scipy.optimize.root(II1,6)
+            ret.append(10**R['x'])
+        plt.semilogy(mus, ret, 'o-',label='Distance %d kpc'%distance)
+    plt.legend()
+    plt.title('Minimum Detectable halo mass from a single stream impact')
+    plt.xlabel(r'$\mu$ [mag/sq.arcsec]',)
+    plt.ylabel(r'$M_{halo}$ [M$_{\odot}$]',)
+    plt.savefig('halo_limit.png')
