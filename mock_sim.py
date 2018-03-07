@@ -203,6 +203,11 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
         The width of the stream in pc
     timpact: real
         The time of impact in Gyr
+    gap_fill: bool
+        If true we take into account the filling of the gaps. I.e. we 
+        use the depth of the gap and the size of the gap up to a point
+        in time when the gap is supposed to be filled (assuming that it 
+        fills with 1km/s velocity)
     Returns:
     ---
     (masses,tdepths,odepths): Tuple of 3 numpy arrays
@@ -262,13 +267,24 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
 
 
 def make_plot(ofname, gap_fill=True):
+    """
+    Make the plots 
+
+    Arguments:
+    ----------
+    ofname: str
+         Output figure name
+    gap_fill: bool
+         Take into accout the filling of the gaps
+
+    """
     mus = [30, 31, 32, 33]
     distances = [10, 20, 40]
     for distance in distances:
         ret = []
         for mu in mus:
             mass, gapt, gapo = predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=None,
-                                                  timpact=0.5, gap_fill=True)
+                                                  timpact=0.5, gap_fill=gap_fill)
             xind = np.isfinite(gapo/gapt)
             II1 = scipy.interpolate.UnivariateSpline(
                 np.log10(mass)[xind], (gapo/gapt-1)[xind], s=0)
