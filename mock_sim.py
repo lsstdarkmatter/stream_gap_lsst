@@ -228,7 +228,7 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
         gap_depths = np.zeros(len(mgrid))
         gap_sizes_deg = np.zeros(len(mgrid))
         for i, curm in enumerate(mgrid7):
-            gap_depths[i], gap_sizes_deg[i] = find_gap_size_depth(
+            gap_sizes_deg[i], gap_depths[i] = find_gap_size_depth(
                 curm, dist=distance_kpc, maxt=timpact)
 
     if maglim is None:
