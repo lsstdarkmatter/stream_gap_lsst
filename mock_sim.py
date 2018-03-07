@@ -167,8 +167,24 @@ def get_mock_density(distance, isoname, survey,
     bgdens = nbgstars/mockarea
     return bgdens
 
+def find_gap_size_depth(mass, dist, maxt=1):
+    def F(x):
+        len_gap_kpc = np.deg2rad(sss.gap_size(mass, dist=dist,timpact=x))/auni.rad*dist
+        vel = 1 # kms
+        len_gap_km = 3.086e16*len_gap_kpc
+        time_fill_gap = len_gap_km/vel/3.15e7/1e9  # in gyr
+        return time_fill_gap/x-1
+    R=scipy.optimize.root(F, 0.1)
+    time = R['x'][0]
+    time = min(time,maxt)
+    #print ('x',F(0.5),F(0.001),F(10),time,maxt)
+    print ('time',time,mass)#,maxt)
+    len_gap_deg = sss.gap_size(mass, dist=dist,timpact=float(time))/auni.deg
+    depth_gap = 1- sss.gap_depth(mass, timpact=time)
+    return len_gap_deg, depth_gap
+
 def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
-                       timpact=1):
+                       timpact=1, gap_fill=True):
     """
     Arguments:
     ---------
@@ -195,13 +211,18 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
     mgrid = 10**np.linspace(3., 10, 100)
     mgrid7 = mgrid / 1e7
-    gap_depths = np.array([1 - sss.gap_depth(_,timpact=timpact) for _ in mgrid7])
-    # We do 1-gap_depth() because sss_gap_depth returns the height of 
-    # the gap from zero rather than from 1.
-    
-    gap_sizes_deg = np.array(
+    if not gap_fill:
+        gap_depths = np.array([1 - sss.gap_depth(_,timpact=timpact) for _ in mgrid7])
+        # We do 1-gap_depth() because sss_gap_depth returns the height of 
+        # the gap from zero rather than from 1.    
+        gap_sizes_deg = np.array(
         [sss.gap_size(_, dist=distance_kpc * auni.kpc, timpact=timpact) /
          auni.deg for _ in mgrid7])
+    else:
+        gap_depths = np.zeros(len(mgrid))
+        gap_sizes_deg = np.zeros(len(mgrid))
+        for i,curm in enumerate(mgrid7):
+            gap_depths[i],gap_sizes_deg[i]=find_gap_size_depth(curm, dist=distance_kpc,maxt=timpact)
     
     if maglim is None:
         maglim_g = getMagLimit('g', survey)
@@ -232,14 +253,14 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
             detfracs[i]=np.nan
     return (mgrid, gap_depths, detfracs)
 
-def make_plot():
+def make_plot(ofname, gap_fill=True):
     mus = [30,31,32,33]
     distances = [10,20,40]
     for distance in distances:
         ret = []
         for mu in mus:
             mass, gapt, gapo = predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=None,
-                                              timpact=0.5)
+                                                  timpact=0.5,gap_fill=True)
             xind = np.isfinite(gapo/gapt)
             II1 = scipy.interpolate.UnivariateSpline(np.log10(mass)[xind],(gapo/gapt-1)[xind],s=0)
             R=scipy.optimize.root(II1,6)
@@ -249,4 +270,4 @@ def make_plot():
     plt.title('Minimum Detectable halo mass from a single stream impact')
     plt.xlabel(r'$\mu$ [mag/sq.arcsec]',)
     plt.ylabel(r'$M_{halo}$ [M$_{\odot}$]',)
-    plt.savefig('halo_limit.png')
+    plt.savefig(ofname)
