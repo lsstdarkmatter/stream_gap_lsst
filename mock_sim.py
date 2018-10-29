@@ -13,7 +13,7 @@ import scipy.optimize
 def betw(x, x1, x2): return (x >= x1) & (x <= x2)
 
 
-def getMagErr(mag, filt, survey='LSST'):
+def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
     """
     Parameters
     ----------
@@ -23,6 +23,8 @@ def getMagErr(mag, filt, survey='LSST'):
         Filter [g or r]
     survey: str
         Survey
+    calibration_err: float
+        Assumed systematic, in mag
     Returns:
     -------
         err: float
@@ -37,16 +39,21 @@ def getMagErr(mag, filt, survey='LSST'):
     if survey == 'CFHT':
         g, g_err, r, r_err = np.loadtxt('CFHT_photoerr.txt', skiprows = 1, unpack=True)
         if filt == 'g':
-            return np.interp(mag, g, g_err)
+            magerr = np.interp(mag, g, g_err)
         if filt == 'r':
-            return np.interp(mag, r, r_err)
+            magerr =  np.interp(mag, r, r_err)
+        return np.sqrt(magerr**2+calibration_err**)
     if survey == 'SDSS':
+        #this is DR9 photometry
         g, g_err, r, r_err = np.loadtxt('SDSS_photoerr.txt', skiprows = 1, unpack=True)
         if filt == 'g':
-            return np.interp(mag, g, g_err)
+            magerr = np.interp(mag, g, g_err)
         if filt == 'r':
-            return np.interp(mag, r, r_err)
+            magerr =  np.interp(mag, r, r_err)
+        return np.sqrt(magerr**2+calibration_err**)
     else print "No error model for this survey"
+
+
         
 
 def getMagErrVec(mag, filt, survey='LSST'):
@@ -167,7 +174,7 @@ def get_mock_density(distance, isoname, survey,
     dg = ggrid - gcurve[xind].reshape(ggrid.shape)
     dr = rgrid - rcurve[xind].reshape(rgrid.shape)
 
-    thresh = 2  # how many sigma away from the isochrone we select
+    thresh = 2.  # how many sigma away from the isochrone we select
 
     mask = (np.abs(dg/gerr) < thresh) & (np.abs(dr/rerr) <
                                          thresh) & (rgrid < maglim_r) & (ggrid < maglim_g)
