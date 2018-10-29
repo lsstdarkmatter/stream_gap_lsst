@@ -179,7 +179,9 @@ def find_gap_size_depth(mass, dist, maxt=1):
         time_fill_gap = len_gap_km/vel/3.15e7/1e9  # in gyr
         return time_fill_gap/x-1
     R = scipy.optimize.root(F, 0.1)
+    # time to fill the gap created by subhalo of the given mass and impact parameter
     time = R['x'][0]
+    # cap time after the impact to the time required to fill the gap
     time = min(time, maxt)
     #print ('x',F(0.5),F(0.001),F(10),time,maxt)
     print('time', time, mass)  # ,maxt)
