@@ -13,16 +13,21 @@ import scipy.optimize
 def betw(x, x1, x2): return (x >= x1) & (x <= x2)
 
 
-def getMagErr(mag, filt, survey='LSST'):
+def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
     """
     Parameters
     ----------
     mag: float
         Magnitude
     filt: str
-        Filter
+        Filter [g or r]
     survey: str
         Survey
+    calibration_err: float
+        Assumed systematic, in mag
+    nYrObs: float
+        parameter to be passed to the error model; default is 1 year
+
     Returns:
     -------
         err: float
@@ -31,10 +36,36 @@ def getMagErr(mag, filt, survey='LSST'):
     if survey == 'LSST':
         import photErrorModel as pem
         lem = pem.LSSTErrorModel()
+        lem.nYrObs = 1.
         #minmagerr = 0.01
         magerr = lem.getMagError(mag, 'LSST_' + filt)
         return magerr
+    if survey == 'LSST10':
+        import photErrorModel as pem
+        lem = pem.LSSTErrorModel()
+        lem.nYrObs = 10.
+        #minmagerr = 0.01
+        magerr = lem.getMagError(mag, 'LSST_'+filt)
+        return magerr
+    if survey == 'CFHT':
+        g, g_err, r, r_err = np.loadtxt('CFHT_photoerr.txt', skiprows = 1, unpack=True)
+        if filt == 'g':
+            magerr = np.interp(mag, g, g_err)
+        if filt == 'r':
+            magerr =  np.interp(mag, r, r_err)
+        return np.sqrt(magerr**2+calibration_err**2)
+    if survey == 'SDSS':
+        #this is DR9 photometry
+        g, g_err, r, r_err = np.loadtxt('SDSS_photoerr.txt', skiprows = 1, unpack=True)
+        if filt == 'g':
+            magerr = np.interp(mag, g, g_err)
+        if filt == 'r':
+            magerr =  np.interp(mag, r, r_err)
+        return np.sqrt(magerr**2+calibration_err**2)
+    else: print "No error model for this survey"
 
+
+        
 
 def getMagErrVec(mag, filt, survey='LSST'):
     """ 
@@ -49,13 +80,20 @@ def getMagErrVec(mag, filt, survey='LSST'):
         The magnitude uncertainty
 
     """
+    #if survey == 'LSST'
+    #    maggrid = np.linspace(15, 25.3, 1000)
+    #if survey == 'LSST10'
+    #    maggrid = np.linspace(15, 26.6, 1000)
+    #if survey == 'SDSS'
+    #    maggrid = np.linspace(15, 22.3, 1000)
+    #if survey == 'CFHT'
     maggrid = np.linspace(15, 28, 1000)
     res = [getMagErr(m, filt, survey) for m in maggrid]
     res = scipy.interpolate.UnivariateSpline(maggrid, res, s=0)(mag)
     return res
 
 
-def getMagLimit(filt, survey='LSST', maxerr=0.3):
+def getMagLimit(filt, survey='LSST', maxerr=0.1):
     "A sophisticated calculation of LSST magntude limit"
     xgrid = np.linspace(15, 28, 1000)
     err = getMagErrVec(xgrid, filt, survey)
@@ -154,7 +192,7 @@ def get_mock_density(distance, isoname, survey,
     dg = ggrid - gcurve[xind].reshape(ggrid.shape)
     dr = rgrid - rcurve[xind].reshape(rgrid.shape)
 
-    thresh = 2  # how many sigma away from the isochrone we select
+    thresh = 2.  # how many sigma away from the isochrone we select
 
     mask = (np.abs(dg / gerr) < thresh) & (np.abs(dr / rerr) <
                                            thresh) & (rgrid < maglim_r) & (ggrid < maglim_g)
@@ -225,8 +263,8 @@ def find_gap_size_depth(mass, dist, maxt=1, **kwargs):
     return len_gap_deg, depth_gap
 
 
-def predict_gap_depths(mu, distance_kpc, survey, width_pc=20., maglim=None,
-                       timpact=1, gap_fill=True, **kwargs):
+def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
+                       timpact=1, gap_fill=True, mockfile = 'stream_gap_mock.fits', **kwargs):
     """
     Arguments:
     ---------
@@ -245,6 +283,8 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20., maglim=None,
         use the depth of the gap and the size of the gap up to a point
         in time when the gap is supposed to be filled (assuming that it 
         fills with 1km/s velocity)
+    mockfile: string
+        Galaxia background file; l=90,b=30, 60, 90 are included
     Returns:
     ---
     (masses,tdepths,odepths): Tuple of 3 numpy arrays
@@ -319,6 +359,7 @@ def make_plot(ofname, gap_fill=True, **kwargs):
     for distance in distances:
         ret = []
         for mu in mus:
+            print "distance", distance, "mu", mu
             mass, gapt, gapo = predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=None,
                                                   timpact=0.5, gap_fill=gap_fill, **kwargs)
             xind = np.isfinite(gapo / gapt)
