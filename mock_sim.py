@@ -20,7 +20,7 @@ def getMagErr(mag, filt, survey='LSST'):
     mag: float
         Magnitude
     filt: str
-        Filter
+        Filter [g or r]
     survey: str
         Survey
     Returns:
@@ -34,7 +34,20 @@ def getMagErr(mag, filt, survey='LSST'):
         #minmagerr = 0.01
         magerr = lem.getMagError(mag, 'LSST_'+filt)
         return magerr
-
+    if survey == 'CFHT':
+        g, g_err, r, r_err = np.loadtxt('CFHT_photoerr.txt', skiprows = 1, unpack=True)
+        if filt == 'g':
+            return np.interp(mag, g, g_err)
+        if filt == 'r':
+            return np.interp(mag, r, r_err)
+    if survey == 'SDSS':
+        g, g_err, r, r_err = np.loadtxt('SDSS_photoerr.txt', skiprows = 1, unpack=True)
+        if filt == 'g':
+            return np.interp(mag, g, g_err)
+        if filt == 'r':
+            return np.interp(mag, r, r_err)
+    else print "No error model for this survey"
+        
 
 def getMagErrVec(mag, filt, survey='LSST'):
     """ 
