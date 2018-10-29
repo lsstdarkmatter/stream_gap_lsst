@@ -149,7 +149,9 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                         if len(impact_parameters) > 1:
                             label += ' b =  %d rs' % b
                         if len(maglims) > 1:
-                            label += ' maglim =  %d' % maglim
+                            if maglim == None:
+                                maglim = getMagLimit('g', 'LSST')
+                            label += 'maglim = '
                     except:
                         label = 'd=%d, w=%d, b=%d, mag=%d' % (distance, w, b, maglim)
                     plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
