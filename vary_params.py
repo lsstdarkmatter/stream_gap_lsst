@@ -41,6 +41,7 @@ def plot_gap_fill_times(dist=20):
 
     plt.ylabel(r'$\mathrm{Fill\ Time\ (Gyr)}$')
     plt.xlabel(r'$\mathrm{Mass\ (Msun)}$')
+    plt.xscale('log')
 
     plt.tight_layout()
     plt.savefig('fill_time.png')
@@ -151,7 +152,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                         if len(maglims) > 1:
                             if maglim == None:
                                 maglim = getMagLimit('g', 'LSST')
-                            label += 'maglim = '
+                                label += 'maglim = '
                     except:
                         label = 'd=%d, w=%d, b=%d, mag=%d' % (distance, w, b, maglim)
                     plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
