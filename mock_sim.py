@@ -13,7 +13,7 @@ import scipy.optimize
 def betw(x, x1, x2): return (x >= x1) & (x <= x2)
 
 
-def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01, lsst_nYrObs = 1.):
+def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
     """
     Parameters
     ----------
@@ -36,7 +36,14 @@ def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01, lsst_nYrObs = 1.
     if survey == 'LSST':
         import photErrorModel as pem
         lem = pem.LSSTErrorModel()
-        lem.nYrObs = lsst_nYrObs
+        lem.nYrObs = 1.
+        #minmagerr = 0.01
+        magerr = lem.getMagError(mag, 'LSST_'+filt)
+        return magerr
+    if survey == 'LSST10':
+        import photErrorModel as pem
+        lem = pem.LSSTErrorModel()
+        lem.nYrObs = 10.
         #minmagerr = 0.01
         magerr = lem.getMagError(mag, 'LSST_'+filt)
         return magerr
@@ -73,13 +80,20 @@ def getMagErrVec(mag, filt, survey='LSST'):
         The magnitude uncertainty
 
     """
+    #if survey == 'LSST'
+    #    maggrid = np.linspace(15, 25.3, 1000)
+    #if survey == 'LSST10'
+    #    maggrid = np.linspace(15, 26.6, 1000)
+    #if survey == 'SDSS'
+    #    maggrid = np.linspace(15, 22.3, 1000)
+    #if survey == 'CFHT'
     maggrid = np.linspace(15, 28, 1000)
     res = [getMagErr(m, filt, survey) for m in maggrid]
     res = scipy.interpolate.UnivariateSpline(maggrid, res, s=0)(mag)
     return res
 
 
-def getMagLimit(filt, survey='LSST', maxerr=0.3):
+def getMagLimit(filt, survey='LSST', maxerr=0.1):
     "A sophisticated calculation of LSST magntude limit"
     xgrid = np.linspace(15, 28, 1000)
     err = getMagErrVec(xgrid, filt, survey)
@@ -309,6 +323,7 @@ def make_plot(ofname, gap_fill=True):
     for distance in distances:
         ret = []
         for mu in mus:
+            print "distance", distance, "mu", mu
             mass, gapt, gapo = predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=None,
                                                   timpact=0.5, gap_fill=gap_fill)
             xind = np.isfinite(gapo/gapt)
