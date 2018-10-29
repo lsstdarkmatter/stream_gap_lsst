@@ -13,7 +13,7 @@ import scipy.optimize
 def betw(x, x1, x2): return (x >= x1) & (x <= x2)
 
 
-def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
+def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01, lsst_nYrObs = 1.):
     """
     Parameters
     ----------
@@ -25,6 +25,9 @@ def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
         Survey
     calibration_err: float
         Assumed systematic, in mag
+    nYrObs: float
+        parameter to be passed to the error model; default is 1 year
+
     Returns:
     -------
         err: float
@@ -33,6 +36,7 @@ def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
     if survey == 'LSST':
         import photErrorModel as pem
         lem = pem.LSSTErrorModel()
+        lem.nYrObs = lsst_nYrObs
         #minmagerr = 0.01
         magerr = lem.getMagError(mag, 'LSST_'+filt)
         return magerr
@@ -42,7 +46,7 @@ def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
             magerr = np.interp(mag, g, g_err)
         if filt == 'r':
             magerr =  np.interp(mag, r, r_err)
-        return np.sqrt(magerr**2+calibration_err**)
+        return np.sqrt(magerr**2+calibration_err**2)
     if survey == 'SDSS':
         #this is DR9 photometry
         g, g_err, r, r_err = np.loadtxt('SDSS_photoerr.txt', skiprows = 1, unpack=True)
@@ -50,8 +54,8 @@ def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
             magerr = np.interp(mag, g, g_err)
         if filt == 'r':
             magerr =  np.interp(mag, r, r_err)
-        return np.sqrt(magerr**2+calibration_err**)
-    else print "No error model for this survey"
+        return np.sqrt(magerr**2+calibration_err**2)
+    else: print "No error model for this survey"
 
 
         
