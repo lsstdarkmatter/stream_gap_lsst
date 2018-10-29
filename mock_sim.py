@@ -189,7 +189,8 @@ def find_gap_size_depth(mass, dist, maxt=1):
 
 
 def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
-                       timpact=1, gap_fill=True):
+                       timpact=1, gap_fill=True, mockfile = 'stream_gap_mock.fits'
+):
     """
     Arguments:
     ---------
@@ -208,6 +209,8 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
         use the depth of the gap and the size of the gap up to a point
         in time when the gap is supposed to be filled (assuming that it 
         fills with 1km/s velocity)
+    mockfile: string
+        Galaxia background file; l=90,b=30, 60, 90 are included
     Returns:
     ---
     (masses,tdepths,odepths): Tuple of 3 numpy arrays
@@ -217,7 +220,6 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
     """
     isoname = 'iso_a12.0_z0.00020.dat'
     mockarea = 100
-    mockfile = 'stream_gap_mock.fits'
     width_deg = np.rad2deg(width_pc/distance_kpc/1e3)
     mgrid = 10**np.linspace(3., 10, 100)
     mgrid7 = mgrid / 1e7
