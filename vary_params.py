@@ -134,8 +134,9 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                     for distance in distances:
                         ret = []
                         for mu in mus:
+                            mockfile = '%d_deg_mock.fits' % lat
                             mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=maglim,
-                                                                           timpact=0.5, gap_fill=gap_fill, w=w, X=b, **kwargs)
+                                                                           timpact=0.5, gap_fill=gap_fill, w=w, X=b, mockfile=mockfile, **kwargs)
                             xind = np.isfinite(gapo / gapt)
                             II1 = scipy.interpolate.UnivariateSpline(
                                 np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
