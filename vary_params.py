@@ -125,37 +125,40 @@ def plot_flyby_velocity(mass=1e6, dist=20, maxt=0.5):
     plt.savefig('flyby_velocity.png')
 
 
-def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], gap_fill=True, **kwargs):
+def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], gap_fill=True, **kwargs):
     plt.figure()
-    for maglim in maglims:
-        for b in impact_parameters:
-            for w in velocities:
-                for distance in distances:
-                    ret = []
-                    for mu in mus:
-                        mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=maglim,
-                                                                       timpact=0.5, gap_fill=gap_fill, w=w, X=b, **kwargs)
-                        xind = np.isfinite(gapo / gapt)
-                        II1 = scipy.interpolate.UnivariateSpline(
-                            np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
-                        R = scipy.optimize.root(II1, 6)
-                        ret.append(10**R['x'])
+    for lat in latitudes:
+        for maglim in maglims:
+            for b in impact_parameters:
+                for w in velocities:
+                    for distance in distances:
+                        ret = []
+                        for mu in mus:
+                            mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=maglim,
+                                                                           timpact=0.5, gap_fill=gap_fill, w=w, X=b, **kwargs)
+                            xind = np.isfinite(gapo / gapt)
+                            II1 = scipy.interpolate.UnivariateSpline(
+                                np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
+                            R = scipy.optimize.root(II1, 6)
+                            ret.append(10**R['x'])
 
-                    try:
-                        label = ''
-                        if len(distances) > 1:
-                            label += ' d = %d kpc' % distance
-                        if len(velocities) > 1:
-                            label += ' w = %d km/s' % w
-                        if len(impact_parameters) > 1:
-                            label += ' b =  %d rs' % b
-                        if len(maglims) > 1:
-                            if maglim == None:
-                                maglim = getMagLimit('g', 'LSST')
-                                label += 'maglim = '
-                    except:
-                        label = 'd=%d, w=%d, b=%d, mag=%d' % (distance, w, b, maglim)
-                    plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
+                        try:
+                            label = ''
+                            if len(distances) > 1:
+                                label += ' d = %d kpc' % distance
+                            if len(velocities) > 1:
+                                label += ' w = %d km/s' % w
+                            if len(impact_parameters) > 1:
+                                label += ' b =  %d rs' % b
+                            if len(maglims) > 1:
+                                if maglim == None:
+                                    maglim = getMagLimit('g', 'LSST')
+                                label += 'maglim = %d' % maglim
+                            if len(latitudes) > 1:
+                                label += 'lat = %d' % lat
+                        except:
+                            label = 'd=%d, w=%d, b=%d, mag=%d' % (distance, w, b, maglim)
+                        plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
 
     plt.legend()
     plt.title('Minimum Detectable halo mass from a single stream impact')
