@@ -91,7 +91,7 @@ def gap_size(Mhalo, dist=10. * u.kpc,
 
 
 def gap_depth(Mhalo, wwperpfac=numpy.sqrt(3. / 2.),
-              w=150., X=1., timpact=1., R=0. * u.kpc, z=20. * u.kpc, , scale_radius=None, **kwargs):
+              w=150., X=1., timpact=1., R=0. * u.kpc, z=20. * u.kpc, scale_radius=None, **kwargs):
     """
     NAME:
        gap_depth
