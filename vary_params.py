@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 
 import astropy.table as atpy
@@ -126,6 +127,13 @@ def plot_flyby_velocity(mass=1e6, dist=20, maxt=0.5):
 
 
 def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], gap_fill=True, **kwargs):
+    if os.path.exists('output.txt'):
+        pass
+    else:
+        output_file = open('output.txt', 'w')
+        output_file.write('#distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False),  surface_brightness (mag/arcsec^2), minimum_mass (10^7 M_sun)')
+        output_file.close()
+
     plt.figure()
     for lat in latitudes:
         for maglim in maglims:
@@ -161,11 +169,14 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                             label = 'd=%d, w=%d, b=%d, mag=%d' % (distance, w, b, maglim)
                         plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
 
+                        with open('output.txt', 'a') as output_file:
+                            output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, mu, ret))
+
     plt.legend()
     plt.title('Minimum Detectable halo mass from a single stream impact')
     plt.xlabel(r'$\mu$ [mag/sq.arcsec]',)
     plt.ylabel(r'$M_{halo}$ [M$_{\odot}$]',)
-    plt.savefig(filename)
+    plt.savefig('%s.png' % filename)
 
 
 if __name__ == "__main__":
