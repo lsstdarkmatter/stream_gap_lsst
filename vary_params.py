@@ -147,6 +147,14 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                                 maglim = mock_sim.getMagLimit('g', survey)
 
                             for mu in mus:
+                                # check if output already saved for these params
+                                with np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes') as output:
+                                    idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
+                                        maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+                                if len(idx) > 0:
+                                    print 'Output exists'
+                                    continue
+
                                 mockfile = '%d_deg_mock.fits' % lat
                                 mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, survey, width_pc=20, maglim=maglim,
                                                                                timpact=0.5, gap_fill=gap_fill, w=w, X=b, mockfile=mockfile, **kwargs)
@@ -157,7 +165,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                                 ret.append(10**R['x'])
 
                                 with open('output.txt', 'a') as output_file:
-                                    output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %d, %s, %.2f, %.2e\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret[-1]))
+                                    output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %d, %s, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret[-1]))
 
                             try:
                                 label = ''
