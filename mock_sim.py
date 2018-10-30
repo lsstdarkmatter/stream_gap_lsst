@@ -363,8 +363,7 @@ def make_plot(ofname, gap_fill=True, **kwargs):
             mass, gapt, gapo = predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=None,
                                                   timpact=0.5, gap_fill=gap_fill, **kwargs)
             xind = np.isfinite(gapo / gapt)
-            II1 = scipy.interpolate.UnivariateSpline(
-                np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
+            II1 = scipy.interpolate.UnivariateSpline(np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
             R = scipy.optimize.root(II1, 6)
             ret.append(10**R['x'])
         plt.semilogy(mus, ret, 'o-', label='Distance %d kpc' % distance)
