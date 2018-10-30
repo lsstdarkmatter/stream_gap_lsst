@@ -182,7 +182,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
     plt.legend(loc='upper left', fontsize=10)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
     plt.xlabel(r'$\mu \mathrm{(mag/arcsec^2)}$',)
-    plt.ylabel(r'$M_{halo}\ \mathrm{(M_{\odot})}$',)
+    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
     plt.tight_layout()
     plt.savefig('%s.png' % filename)
 
@@ -232,7 +232,7 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
     plt.legend(loc='upper left', fontsize=10)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
     plt.xlabel(r'$\mu \mathrm{(mag/arcsec^2)}$',)
-    plt.ylabel(r'$M_{halo}\ \mathrm{(M_{\odot})}$',)
+    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
     plt.tight_layout()
     plt.savefig('%s.png' % filename)
 
