@@ -151,7 +151,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                                 with np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes') as output:
                                     idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
                                         maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
-                                if len(idx) > 0:
+                                if np.sum(idx) > 0:
                                     print 'Output exists'
                                     continue
 
