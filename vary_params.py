@@ -131,7 +131,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
         pass
     else:
         output_file = open('output.txt', 'w')
-        output_file.write('# distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False), survey, surface_brightness (mag/arcsec^2), minimum_mass (10^7 M_sun)')
+        output_file.write('# distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False), survey, surface_brightness (mag/arcsec^2), minimum_mass (10^7 M_sun)\n')
         output_file.close()
 
     plt.figure()
@@ -152,7 +152,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                             ret.append(10**R['x'])
 
                         if maglim == None:
-                            maglim = getMagLimit('g', survey)
+                            maglim = mock_sim.getMagLimit('g', survey)
 
                         try:
                             label = ''
