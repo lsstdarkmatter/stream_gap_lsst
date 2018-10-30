@@ -28,6 +28,35 @@ def plot_pretty(dpi=175, fontsize=15):
     return
 
 
+def plot_imact_parameter(mass=1e6, dist=20, maxt=0.5):
+    mass /= 1e7
+    rs = mock_sim.sss.rs(mass)
+
+    scale_radii = np.linspace(rs / 4., rs * 4., 100)
+
+    depths = []
+    widths = []
+
+    for r in scale_radii:
+        gap_width, gap_depth = mock_sim.find_gap_size_depth(mass=mass, dist=dist, maxt=maxt, scale_radius=r)
+        depths.append(gap_depth)
+        widths.append(gap_width)
+
+    # plt.figure()
+    fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+
+    ax[0].plot(scale_radii, widths, lw=2)
+    ax[0].set_ylabel(r'$\mathrm{Gap\ Width\ (deg)}$')
+    ax[0].set_xlabel(r'$r_s\ \mathrm{(kpc)}$')
+
+    ax[1].plot(scale_radii, depths, lw=2)
+    ax[1].set_ylabel(r'$\mathrm{Gap\ Depth}$')
+    ax[1].set_xlabel(r'$r_s\ \mathrm{(kpc)}$')
+
+    plt.tight_layout()
+    plt.savefig('scale_radius.png')
+
+
 def plot_gap_fill_times(dist=20):
     mass_array = 10**np.linspace(3, 7, 100) / 1e7
     times = []
@@ -126,7 +155,7 @@ def plot_flyby_velocity(mass=1e6, dist=20, maxt=0.5):
     plt.savefig('flyby_velocity.png')
 
 
-def save_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True, **kwargs):
+def save_output(mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True, **kwargs):
     if os.path.exists('output.txt'):
         pass
     else:
