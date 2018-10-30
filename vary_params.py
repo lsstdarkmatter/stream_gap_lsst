@@ -200,7 +200,7 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                                 maglim = mock_sim.getMagLimit('g', survey)
 
                             for mu in mus:
-                                idx = (output['dist'] == dist) & (output['w'] == w) & (output['b'] == b) & (output['maglim']
+                                idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim']
                                                                                                             == maglim) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
                                 mass = output['mass'][idx][0]
                                 ret.append(mass)
