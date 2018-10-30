@@ -163,6 +163,8 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                                 try:
                                     II1 = scipy.interpolate.UnivariateSpline(np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
                                 except:
+                                    print 'Spline error'
+                                    ret.append(np.nan)
                                     continue
                                 R = scipy.optimize.root(II1, 6)
                                 ret.append(10**R['x'])
@@ -188,7 +190,9 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                                     label = r'$\mathrm{d=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (distance, w, b, maglim, lat, survey)
                             except:
                                 label = r'$\mathrm{d=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (distance, w, b, maglim, lat, survey)
-                            plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
+                            if len(ret) < 1:
+                                continue
+                            plt.semilogy(mus[~np.isnan(ret)], ret[~np.isnan(ret)], 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
 
     plt.legend(loc='upper left', fontsize=10)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
