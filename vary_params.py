@@ -28,7 +28,7 @@ def plot_pretty(dpi=175, fontsize=15):
     return
 
 
-def plot_imact_parameter(mass=1e6, dist=20, maxt=0.5):
+def plot_scale_radius(mass=1e6, dist=20, maxt=0.5):
     mass /= 1e7
     rs = mock_sim.sss.rs(mass)
 
