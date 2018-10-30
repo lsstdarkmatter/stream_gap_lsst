@@ -140,7 +140,11 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
             for b in impact_parameters:
                 for w in velocities:
                     for distance in distances:
+
                         ret = []
+                        if maglim == None:
+                            maglim = mock_sim.getMagLimit('g', survey)
+
                         for mu in mus:
                             mockfile = '%d_deg_mock.fits' % lat
                             mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, survey, width_pc=20, maglim=maglim,
@@ -151,8 +155,8 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                             R = scipy.optimize.root(II1, 6)
                             ret.append(10**R['x'])
 
-                        if maglim == None:
-                            maglim = mock_sim.getMagLimit('g', survey)
+                            with open('output.txt', 'a') as output_file:
+                                output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %s, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret[-1]))
 
                         try:
                             label = ''
@@ -169,9 +173,6 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                         except:
                             label = 'd=%d, w=%d, b=%d, mag=%d' % (distance, w, b, maglim)
                         plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
-
-                        with open('output.txt', 'a') as output_file:
-                            output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %s, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret))
 
     plt.legend()
     plt.title('Minimum Detectable halo mass from a single stream impact')
