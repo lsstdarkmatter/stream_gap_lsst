@@ -13,7 +13,7 @@ import scipy.optimize
 def betw(x, x1, x2): return (x >= x1) & (x <= x2)
 
 
-def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
+def getMagErr(mag, filt, survey='LSST', calibration_err=0.01):
     """
     Parameters
     ----------
@@ -45,27 +45,26 @@ def getMagErr(mag, filt, survey='LSST', calibration_err = 0.01):
         lem = pem.LSSTErrorModel()
         lem.nYrObs = 10.
         #minmagerr = 0.01
-        magerr = lem.getMagError(mag, 'LSST_'+filt)
+        magerr = lem.getMagError(mag, 'LSST_' + filt)
         return magerr
     if survey == 'CFHT':
-        g, g_err, r, r_err = np.loadtxt('CFHT_photoerr.txt', skiprows = 1, unpack=True)
+        g, g_err, r, r_err = np.loadtxt('CFHT_photoerr.txt', skiprows=1, unpack=True)
         if filt == 'g':
             magerr = np.interp(mag, g, g_err)
         if filt == 'r':
-            magerr =  np.interp(mag, r, r_err)
-        return np.sqrt(magerr**2+calibration_err**2)
+            magerr = np.interp(mag, r, r_err)
+        return np.sqrt(magerr**2 + calibration_err**2)
     if survey == 'SDSS':
-        #this is DR9 photometry
-        g, g_err, r, r_err = np.loadtxt('SDSS_photoerr.txt', skiprows = 1, unpack=True)
+        # this is DR9 photometry
+        g, g_err, r, r_err = np.loadtxt('SDSS_photoerr.txt', skiprows=1, unpack=True)
         if filt == 'g':
             magerr = np.interp(mag, g, g_err)
         if filt == 'r':
-            magerr =  np.interp(mag, r, r_err)
-        return np.sqrt(magerr**2+calibration_err**2)
-    else: print "No error model for this survey"
+            magerr = np.interp(mag, r, r_err)
+        return np.sqrt(magerr**2 + calibration_err**2)
+    else:
+        print "No error model for this survey"
 
-
-        
 
 def getMagErrVec(mag, filt, survey='LSST'):
     """ 
@@ -80,13 +79,13 @@ def getMagErrVec(mag, filt, survey='LSST'):
         The magnitude uncertainty
 
     """
-    #if survey == 'LSST'
+    # if survey == 'LSST'
     #    maggrid = np.linspace(15, 25.3, 1000)
-    #if survey == 'LSST10'
+    # if survey == 'LSST10'
     #    maggrid = np.linspace(15, 26.6, 1000)
-    #if survey == 'SDSS'
+    # if survey == 'SDSS'
     #    maggrid = np.linspace(15, 22.3, 1000)
-    #if survey == 'CFHT'
+    # if survey == 'CFHT'
     maggrid = np.linspace(15, 28, 1000)
     res = [getMagErr(m, filt, survey) for m in maggrid]
     res = scipy.interpolate.UnivariateSpline(maggrid, res, s=0)(mag)
@@ -265,7 +264,7 @@ def find_gap_size_depth(mass, dist, maxt=1, **kwargs):
 
 
 def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
-                       timpact=1, gap_fill=True, mockfile = 'stream_gap_mock.fits', **kwargs):
+                       timpact=1, gap_fill=True, mockfile='stream_gap_mock.fits', **kwargs):
     """
     Arguments:
     ---------
@@ -274,7 +273,7 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
     distance_kpc: real
         Distance to the stream in kpc
     survey: str
-        Name of the survey
+        Name of the survey (LSST, LSST10, CFHT, SDSS)
     width_pc: real
         The width of the stream in pc
     timpact: real

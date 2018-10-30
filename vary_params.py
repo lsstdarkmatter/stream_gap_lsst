@@ -126,12 +126,12 @@ def plot_flyby_velocity(mass=1e6, dist=20, maxt=0.5):
     plt.savefig('flyby_velocity.png')
 
 
-def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], gap_fill=True, **kwargs):
+def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], survey='LSST', gap_fill=True, **kwargs):
     if os.path.exists('output.txt'):
         pass
     else:
         output_file = open('output.txt', 'w')
-        output_file.write('#distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False),  surface_brightness (mag/arcsec^2), minimum_mass (10^7 M_sun)')
+        output_file.write('# distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False), survey, surface_brightness (mag/arcsec^2), minimum_mass (10^7 M_sun)')
         output_file.close()
 
     plt.figure()
@@ -143,13 +143,16 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                         ret = []
                         for mu in mus:
                             mockfile = '%d_deg_mock.fits' % lat
-                            mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, 'LSST', width_pc=20, maglim=maglim,
+                            mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, survey, width_pc=20, maglim=maglim,
                                                                            timpact=0.5, gap_fill=gap_fill, w=w, X=b, mockfile=mockfile, **kwargs)
                             xind = np.isfinite(gapo / gapt)
                             II1 = scipy.interpolate.UnivariateSpline(
                                 np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
                             R = scipy.optimize.root(II1, 6)
                             ret.append(10**R['x'])
+
+                        if maglim == None:
+                            maglim = getMagLimit('g', survey)
 
                         try:
                             label = ''
@@ -160,8 +163,6 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                             if len(impact_parameters) > 1:
                                 label += ' b =  %d rs' % b
                             if len(maglims) > 1:
-                                if maglim == None:
-                                    maglim = getMagLimit('g', 'LSST')
                                 label += 'maglim = %d' % maglim
                             if len(latitudes) > 1:
                                 label += 'lat = %d' % lat
@@ -170,7 +171,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                         plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
 
                         with open('output.txt', 'a') as output_file:
-                            output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, mu, ret))
+                            output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %s, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret))
 
     plt.legend()
     plt.title('Minimum Detectable halo mass from a single stream impact')
