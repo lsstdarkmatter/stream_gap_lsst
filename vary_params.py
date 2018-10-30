@@ -126,59 +126,65 @@ def plot_flyby_velocity(mass=1e6, dist=20, maxt=0.5):
     plt.savefig('flyby_velocity.png')
 
 
-def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], survey='LSST', gap_fill=True, **kwargs):
+def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True, **kwargs):
     if os.path.exists('output.txt'):
         pass
     else:
         output_file = open('output.txt', 'w')
-        output_file.write('# distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False), survey, surface_brightness (mag/arcsec^2), minimum_mass (10^7 M_sun)\n')
+        output_file.write('# distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False), survey, surface_brightness (mag/arcsec^2), minimum_mass (M_sun)\n')
         output_file.close()
 
     plt.figure()
-    for lat in latitudes:
-        for maglim in maglims:
-            for b in impact_parameters:
-                for w in velocities:
-                    for distance in distances:
+    for survey in surveys:
+        for lat in latitudes:
+            for maglim in maglims:
+                for b in impact_parameters:
+                    for w in velocities:
+                        for distance in distances:
 
-                        ret = []
-                        if maglim == None:
-                            maglim = mock_sim.getMagLimit('g', survey)
+                            ret = []
+                            if maglim == None:
+                                maglim = mock_sim.getMagLimit('g', survey)
 
-                        for mu in mus:
-                            mockfile = '%d_deg_mock.fits' % lat
-                            mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, survey, width_pc=20, maglim=maglim,
-                                                                           timpact=0.5, gap_fill=gap_fill, w=w, X=b, mockfile=mockfile, **kwargs)
-                            xind = np.isfinite(gapo / gapt)
-                            II1 = scipy.interpolate.UnivariateSpline(
-                                np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
-                            R = scipy.optimize.root(II1, 6)
-                            ret.append(10**R['x'])
+                            for mu in mus:
+                                mockfile = '%d_deg_mock.fits' % lat
+                                mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, survey, width_pc=20, maglim=maglim,
+                                                                               timpact=0.5, gap_fill=gap_fill, w=w, X=b, mockfile=mockfile, **kwargs)
+                                xind = np.isfinite(gapo / gapt)
+                                II1 = scipy.interpolate.UnivariateSpline(
+                                    np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
+                                R = scipy.optimize.root(II1, 6)
+                                ret.append(10**R['x'])
 
-                            with open('output.txt', 'a') as output_file:
-                                output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %s, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret[-1]))
+                                with open('output.txt', 'a') as output_file:
+                                    output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %d, %s, %.2f, %.2e\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret[-1]))
 
-                        try:
-                            label = ''
-                            if len(distances) > 1:
-                                label += ' d = %d kpc' % distance
-                            if len(velocities) > 1:
-                                label += ' w = %d km/s' % w
-                            if len(impact_parameters) > 1:
-                                label += ' b =  %d rs' % b
-                            if len(maglims) > 1:
-                                label += 'maglim = %d' % maglim
-                            if len(latitudes) > 1:
-                                label += 'lat = %d' % lat
-                        except:
-                            label = 'd=%d, w=%d, b=%d, mag=%d' % (distance, w, b, maglim)
-                        plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
+                            try:
+                                label = ''
+                                if len(distances) > 1:
+                                    label += ' d = %d kpc' % distance
+                                if len(velocities) > 1:
+                                    label += ' w = %d km/s' % w
+                                if len(impact_parameters) > 1:
+                                    label += ' b =  %d rs' % b
+                                if len(maglims) > 1:
+                                    label += ' maglim = %d' % maglim
+                                if len(latitudes) > 1:
+                                    label += ' lat = %d' % lat
+                                if len(surveys) > 1:
+                                    label += ' %s' % survey
+                            except:
+                                label = 'd=%d, w=%d, b=%d, mag=%d, lat=%d, %s' % (distance, w, b, maglim, lat, survey)
+                            plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
 
     plt.legend()
     plt.title('Minimum Detectable halo mass from a single stream impact')
     plt.xlabel(r'$\mu$ [mag/sq.arcsec]',)
     plt.ylabel(r'$M_{halo}$ [M$_{\odot}$]',)
     plt.savefig('%s.png' % filename)
+
+
+def plot_output():
 
 
 if __name__ == "__main__":
