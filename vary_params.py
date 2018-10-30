@@ -185,7 +185,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
 
 
 def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True):
-    output = np.genfromtxt('output.txt', unpack=True, delimiter=',', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding=None)
+    output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
 
     plt.figure()
     for survey in surveys:
@@ -200,8 +200,9 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                                 maglim = mock_sim.getMagLimit('g', survey)
 
                             for mu in mus:
-                                idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim']
-                                                                                                            == maglim) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+                                idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
+                                    maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+                                print idx
                                 mass = output['mass'][idx][0]
                                 ret.append(mass)
 
@@ -219,6 +220,8 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                                     label += ' lat = %d' % lat
                                 if len(surveys) > 1:
                                     label += ' %s' % survey
+                                if label == '':
+                                    label = 'd=%d, w=%d, b=%d, mag=%d, lat=%d, %s' % (distance, w, b, maglim, lat, survey)
                             except:
                                 label = 'd=%d, w=%d, b=%d, mag=%d, lat=%d, %s' % (distance, w, b, maglim, lat, survey)
                             plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
