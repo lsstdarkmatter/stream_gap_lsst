@@ -209,27 +209,28 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                             try:
                                 label = ''
                                 if len(distances) > 1:
-                                    label += ' d = %d kpc' % distance
+                                    label += r'$ d = %d \mathrm{kpc}$' % distance
                                 if len(velocities) > 1:
-                                    label += ' w = %d km/s' % w
+                                    label += r'$ w = %d \mathrm{km/s}$' % w
                                 if len(impact_parameters) > 1:
-                                    label += ' b =  %d rs' % b
+                                    label += r'$ b =  %d \mathrm{r_s}$' % b
                                 if len(maglims) > 1:
-                                    label += ' maglim = %d' % maglim
+                                    label += r'$\mathrm{ maglim =} %d$' % maglim
                                 if len(latitudes) > 1:
-                                    label += ' lat = %d' % lat
+                                    label += r'$\mathrm{ lat = %d}$' % lat
                                 if len(surveys) > 1:
-                                    label += ' %s' % survey
+                                    label += r'$\mathrm{ %s}$' % survey
                                 if label == '':
-                                    label = 'd=%d, w=%d, b=%d, mag=%d, lat=%d, %s' % (distance, w, b, maglim, lat, survey)
+                                    label = r'$\mathrm{d=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (distance, w, b, maglim, lat, survey)
                             except:
-                                label = 'd=%d, w=%d, b=%d, mag=%d, lat=%d, %s' % (distance, w, b, maglim, lat, survey)
+                                label = r'$\mathrm{d=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (distance, w, b, maglim, lat, survey)
                             plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
 
-    plt.legend()
+    plt.legend(loc='upper left', fontsize=10)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
-    plt.xlabel(r'$\mu$ [mag/sq.arcsec]',)
-    plt.ylabel(r'$M_{halo}$ [M$_{\odot}$]',)
+    plt.xlabel(r'$\mu \mathrm{(mag/arcsec^2)}$',)
+    plt.ylabel(r'$M_{halo}\ \mathrm{(M_{\odot})}$',)
+    plt.tight_layout()
     plt.savefig('%s.png' % filename)
 
 
