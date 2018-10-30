@@ -251,9 +251,10 @@ def find_gap_size_depth(mass, dist, maxt=1, **kwargs):
         gap depth
     """
 
+    # time to fill the gap created by subhalo of the given mass and impact parameter
     time = find_gap_fill_time(mass, dist, **kwargs)
+    # cap time after the impact to the time required to fill the gap
     time = min(time, maxt)  # time to fill gap if less than max t (default 0.5 Gyr)
-
     #print ('x',F(0.5),F(0.001),F(10),time,maxt)
     print('time', time, mass)  # ,maxt)
 
