@@ -134,6 +134,8 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
         output_file.write('# distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False), survey, surface_brightness (mag/arcsec^2), minimum_mass (M_sun)\n')
         output_file.close()
 
+    output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
+
     plt.figure()
     for survey in surveys:
         for lat in latitudes:
@@ -148,9 +150,8 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
 
                             for mu in mus:
                                 # check if output already saved for these params
-                                with np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes') as output:
-                                    idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
-                                        maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+                                idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
+                                    maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
                                 if np.sum(idx) > 0:
                                     print 'Output exists'
                                     continue
