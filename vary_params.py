@@ -159,8 +159,10 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                                 mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, survey, width_pc=20, maglim=maglim,
                                                                                timpact=0.5, gap_fill=gap_fill, w=w, X=b, mockfile=mockfile, **kwargs)
                                 xind = np.isfinite(gapo / gapt)
-                                II1 = scipy.interpolate.UnivariateSpline(
-                                    np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
+                                try:
+                                    II1 = scipy.interpolate.UnivariateSpline(np.log10(mass)[xind], (gapo / gapt - 1)[xind], s=0)
+                                except:
+                                    continue
                                 R = scipy.optimize.root(II1, 6)
                                 ret.append(10**R['x'])
 
