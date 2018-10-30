@@ -126,7 +126,7 @@ def plot_flyby_velocity(mass=1e6, dist=20, maxt=0.5):
     plt.savefig('flyby_velocity.png')
 
 
-def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True, **kwargs):
+def save_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True, **kwargs):
     if os.path.exists('output.txt'):
         pass
     else:
@@ -136,7 +136,6 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
 
     output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
 
-    plt.figure()
     for survey in surveys:
         for lat in latitudes:
             for maglim in maglims:
@@ -149,6 +148,7 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
                                 maglim = mock_sim.getMagLimit('g', survey)
 
                             for mu in mus:
+                                print mu, distance, w, b, maglim, lat, survey
                                 # check if output already saved for these params
                                 idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
                                     maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
@@ -171,35 +171,6 @@ def make_plot(filename, mus=[30.], distances=[20.], velocities=[150.], impact_pa
 
                                 with open('output.txt', 'a') as output_file:
                                     output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %d, %s, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret[-1]))
-
-                            try:
-                                label = ''
-                                if len(distances) > 1:
-                                    label += r'$ d = %d \mathrm{kpc}$' % distance
-                                if len(velocities) > 1:
-                                    label += r'$ w = %d \mathrm{km/s}$' % w
-                                if len(impact_parameters) > 1:
-                                    label += r'$ b =  %d \mathrm{r_s}$' % b
-                                if len(maglims) > 1:
-                                    label += r'$\mathrm{ maglim =} %d$' % maglim
-                                if len(latitudes) > 1:
-                                    label += r'$\mathrm{ lat = %d}$' % lat
-                                if len(surveys) > 1:
-                                    label += r'$\mathrm{ %s}$' % survey
-                                if label == '':
-                                    label = r'$\mathrm{d=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (distance, w, b, maglim, lat, survey)
-                            except:
-                                label = r'$\mathrm{d=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (distance, w, b, maglim, lat, survey)
-                            if len(ret) < 1:
-                                continue
-                            plt.semilogy(mus[~np.isnan(ret)], ret[~np.isnan(ret)], 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
-
-    plt.legend(loc='upper left', fontsize=10)
-    plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
-    plt.xlabel(r'$\mu \mathrm{(mag/arcsec^2)}$',)
-    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
-    plt.tight_layout()
-    plt.savefig('%s.png' % filename)
 
 
 def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True):
