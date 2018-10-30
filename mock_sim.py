@@ -295,7 +295,7 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
     """
     isoname = 'iso_a12.0_z0.00020.dat'
     mockarea = 100
-    mockfile = 'stream_gap_mock.fits'
+    # mockfile = 'stream_gap_mock.fits'
     width_deg = np.rad2deg(width_pc / distance_kpc / 1e3)
     mgrid = 10**np.linspace(3., 10, 100)
     mgrid7 = mgrid / 1e7
