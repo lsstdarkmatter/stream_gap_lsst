@@ -8,7 +8,7 @@ def lum_cal(Mv):
     return 10.**(0.4*(msun - Mv))
 
 
-def nstar_cal(mu, distance, maglim_g, maglim_r, frac = 0.6):
+def nstar_cal(mu, distance, maglim_g, maglim_r, frac = 0.95):
     '''
     input:
     mu: surface brightness mag/arcsec^2
