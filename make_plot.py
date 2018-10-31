@@ -78,13 +78,6 @@ def final_plot(filename, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w
 
     ax2.set_ylabel(r'$m_{\mathrm{WDM}\ \mathrm{(keV)}}$')
 
-    # plt.axhline(3) # current limit at 3 keV
-
-    # ax1 = plt.gca()
-    # ax2 = ax1.twinx()
-    # mn, mx = ax1.get_ylim()
-    # ax2.set_ylim(wdm_mass(mn), wdm_mass(mx))
-
     plt.legend(loc='upper left', fontsize=15)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
     plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)

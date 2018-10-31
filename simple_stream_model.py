@@ -67,9 +67,9 @@ def gap_size(Mhalo, dist=10. * u.kpc,
     if not isinstance(w, u.Quantity):
         w = w * u.km / u.s
     if not isinstance(R, u.Quantity):
-        R = R * u.km / u.s
+        R = R * u.km # / u.s # ???
     if not isinstance(z, u.Quantity):
-        z = z * u.km / u.s
+        z = z * u.km # / u.s # ???
     if gap_amp is None:
         gap_amp = gap_depth(Mhalo, wwperpfac=wwperpfac, timpact=timpact,
                             w=w, X=X, R=R, z=z)
@@ -90,8 +90,7 @@ def gap_size(Mhalo, dist=10. * u.kpc,
             .to(u.deg, equivalencies=u.dimensionless_angles())
 
 
-def gap_depth(Mhalo, wwperpfac=numpy.sqrt(3. / 2.),
-              w=150., X=1., timpact=1., R=0. * u.kpc, z=20. * u.kpc, scale_radius=None, **kwargs):
+def gap_depth(Mhalo, wwperpfac=numpy.sqrt(3. / 2.), w=150., X=1., timpact=1., R=0. * u.kpc, z=20. * u.kpc, scale_radius=None, **kwargs):
     """
     NAME:
        gap_depth

@@ -1,3 +1,5 @@
+from __future__ import division
+
 import os
 import matplotlib.pyplot as plt
 
@@ -32,7 +34,7 @@ def plot_scale_radius(mass=1e6, dist=20, maxt=0.5):
     mass /= 1e7
     rs = mock_sim.sss.rs(mass)
 
-    scale_radii = np.linspace(rs / 4., rs * 4., 100)
+    scale_radii = rs * np.linspace(0.25, 4., 100)
 
     depths = []
     widths = []
@@ -45,11 +47,11 @@ def plot_scale_radius(mass=1e6, dist=20, maxt=0.5):
     # plt.figure()
     fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 
-    ax[0].plot(scale_radii, widths, lw=2)
+    ax[0].plot(scale_radii / rs, widths, lw=2)
     ax[0].set_ylabel(r'$\mathrm{Gap\ Width\ (deg)}$')
     ax[0].set_xlabel(r'$r_s\ \mathrm{(kpc)}$')
 
-    ax[1].plot(scale_radii, depths, lw=2)
+    ax[1].plot(scale_radii / rs, depths, lw=2)
     ax[1].set_ylabel(r'$\mathrm{Gap\ Depth}$')
     ax[1].set_xlabel(r'$r_s\ \mathrm{(kpc)}$')
 
@@ -177,7 +179,7 @@ def save_output(mus=[30.], distances=[20.], velocities=[150.], impact_parameters
                                 maglim = mock_sim.getMagLimit('g', survey)
 
                             for mu in mus:
-                                print mu, distance, w, b, maglim, lat, survey
+                                # print mu, distance, w, b, maglim, lat, survey
                                 # check if output already saved for these params
                                 idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
                                     maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
@@ -245,6 +247,119 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                             plt.semilogy(mus, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
 
     plt.legend(loc='upper left', fontsize=10)
+    plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
+    plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)
+    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
+    plt.tight_layout()
+    plt.savefig('%s.png' % filename)
+
+
+def plot_output_distance(filename, mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True):
+    output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
+
+    plt.figure()
+    for survey in surveys:
+        for lat in latitudes:
+            for maglim in maglims:
+                for b in impact_parameters:
+                    for w in velocities:
+                        for mu in mus:
+
+                            ret = []
+                            if maglim == None:
+                                maglim = mock_sim.getMagLimit('g', survey)
+
+                            for distance in distances:
+                                idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
+                                    maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+                                # print idx
+                                mass = output['mass'][idx][0]
+                                ret.append(mass)
+
+                            try:
+                                label = ''
+                                if len(mus) > 1:
+                                    label += r'$ \mu = %d$' % mu  # \ \mathrm{mag/arcsec^2}
+                                if len(velocities) > 1:
+                                    label += r'$ w = %d \mathrm{km/s}$' % w
+                                if len(impact_parameters) > 1:
+                                    label += r'$ b =  %d \mathrm{r_s}$' % b
+                                if len(maglims) > 1:
+                                    label += r'$\mathrm{ maglim =} %d$' % maglim
+                                if len(latitudes) > 1:
+                                    label += r'$\mathrm{ lat = %d}$' % lat
+                                if len(surveys) > 1:
+                                    label += r'$\mathrm{ %s}$' % survey
+                                if label == '':
+                                    label = r'$\mathrm{mu=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (mu, w, b, maglim, lat, survey)
+                            except:
+                                label = r'$\mathrm{d=%d, w=%d, b=%d, mag=%d, lat=%d, %s}$' % (mu, w, b, maglim, lat, survey)
+                            plt.semilogy(distances, ret, 'o-', label=label)  # label='d = %d, w = %d, b = %d' % (distance, w, b)
+
+    plt.legend(loc='upper left', fontsize=10)
+    plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
+    plt.xlabel(r'$\mathrm{Distance}\ \mathrm{(kpc)}$',)
+    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
+    plt.tight_layout()
+    plt.savefig('%s.png' % filename)
+
+
+def wdm_mass(mhalo, h=0.7):
+    # input solar mass, return keV
+    return (mhalo * (h / 1e11))**-0.25
+
+
+def final_plot(filename, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w=150., b=1., maglim=None, lat=60., gap_fill=True):
+    output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
+
+    colors = ['cornflowerblue', 'seagreen', 'darkslateblue']
+    plt.figure()
+
+    for i, survey in enumerate(surveys):
+        maglim = mock_sim.getMagLimit('g', survey)
+        ret10 = []
+        ret20 = []
+        ret40 = []
+        for mu in mus:
+            idx = (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
+                maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+
+            idx10 = idx & (output['dist'] == 10)
+            idx20 = idx & (output['dist'] == 20)
+            idx40 = idx & (output['dist'] == 40)
+
+            mass10 = output['mass'][idx10][0]
+            mass20 = output['mass'][idx20][0]
+            mass40 = output['mass'][idx40][0]
+            ret10.append(mass10)
+            ret20.append(mass20)
+            ret40.append(mass40)
+
+        label = r'$\mathrm{%s}$' % survey
+        plt.semilogy(mus, ret20, 'o-', label=label, c=colors[i])  # label='d = %d, w = %d, b = %d' % (distance, w, b)
+        plt.fill_between(mus, ret10, ret40, alpha=0.2, color=colors[i])
+
+    ax1 = plt.gca()
+    ax2 = ax1.twinx()
+    mn, mx = ax1.get_ylim()
+    ax2.set_ylim(mn, mx)
+    ax2.set_yscale('log')
+
+    ticks = ax1.get_yticks()
+    wdm = wdm_mass(np.asarray(ticks))
+    labels = [r'$%.2f$' % t for t in wdm]
+    ax2.set_yticklabels(labels)
+
+    ax2.set_ylabel(r'$m_{\mathrm{WDM}\ \mathrm{(keV)}}$')
+
+    # plt.axhline(3) # current limit at 3 keV
+
+    # ax1 = plt.gca()
+    # ax2 = ax1.twinx()
+    # mn, mx = ax1.get_ylim()
+    # ax2.set_ylim(wdm_mass(mn), wdm_mass(mx))
+
+    plt.legend(loc='upper left', fontsize=15)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
     plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)
     plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
