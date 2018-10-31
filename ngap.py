@@ -228,7 +228,7 @@ def input_legacy():
     t = Table([streams, length, age, r, vcirc, nsub, fcut], names=('name', 'length', 'age', 'rgal', 'vcirc', 'nsub', 'fcut'))
     t.pprint()
     
-    t.write('legacy_streams.fits', overwrite=True)
+    t.write('legacy_streams_0.75.fits', overwrite=True)
 
 def input_des():
     """Compile stream input parameters for DES streams from Shipp+2018"""
@@ -249,6 +249,7 @@ def input_des():
     M = vcirc**2 * r / G
     m = tin['Mprog']*1e4*u.Msun
     age = ((tin['l']*u.deg).to(u.radian).value / (2**(2/3) * (m/M)**(1/3) * np.sqrt(G*M/r**3))).to(u.Gyr)
+    age = np.ones(np.size(length)) * 8*u.Gyr
     
     # get subhalo density
     a = 0.678
@@ -261,8 +262,15 @@ def input_des():
     nsub = cdisk * np.exp(-2/a*((r/r2)**a-1)) * m0/(n+1) * ((m2/m0)**(n+1) - (m1/m0)**(n+1))
     
     # replace with actual LSST estimates
-    fcut = np.ones(np.size(length)) * 0.75
+    tf = Table.read('min_depths_LSST.txt', format='ascii', delimiter=',')
+    fcut = 1 - tf['col2']
+    t = Table([streams, length, age, r, vcirc, nsub, fcut], names=('name', 'length', 'age', 'rgal', 'vcirc', 'nsub', 'fcut'))
+    t.write('DES_streams_LSST.fits', overwrite=True)
     
+    tf = Table.read('min_depths_LSST10.txt', format='ascii', delimiter=',')
+    fcut = 1 - tf['col2']
+    t = Table([streams, length, age, r, vcirc, nsub, fcut], names=('name', 'length', 'age', 'rgal', 'vcirc', 'nsub', 'fcut'))
+    t.write('DES_streams_LSST10.fits', overwrite=True)
 
 
 def ngaps_perstream(length, tmax, r, vcirc, nsub, fcut, xmin=10**5, xmax=10**9, n=1.9, Nmass=50000, bmax=5*u.kpc, sigma=180*u.km/u.s, vmin=-1000*u.km/u.s, vmax=1000*u.km/u.s, seed=542734, N=1000):
@@ -297,10 +305,10 @@ def ngaps_perstream(length, tmax, r, vcirc, nsub, fcut, xmin=10**5, xmax=10**9, 
     
     return ngap_obs
 
-def get_gaps(streams='legacy', N=1000):
+def get_gaps(streams='legacy', survey='0.75', N=1000):
     """Get the number of detactable gaps per stream"""
     
-    t = Table.read('{}_streams.fits'.format(streams))
+    t = Table.read('{}_streams_{}.fits'.format(streams, survey))
     Nstream = len(t)
     ngaps = np.zeros(Nstream)
     
@@ -310,13 +318,14 @@ def get_gaps(streams='legacy', N=1000):
     
     tout = Table([t['name'], ngaps], names=('name', 'ngaps'))
     tout.pprint()
+    print(np.sum(ngaps))
     
-    tout.write('ngaps_{}_lcdm.fits'.format(streams))
+    tout.write('ngaps_lcdm_{}_{}.fits'.format(streams, survey), overwrite=True)
 
-def lcdm_limits(streams='legacy'):
+def lcdm_limits(streams='legacy', survey='0.75'):
     """Show consistency with LCDM as a function of the total number of detected gaps in a set of streams"""
     
-    t = Table.read('ngaps_{}_lcdm.fits'.format(streams))
+    t = Table.read('ngaps_lcdm_{}_{}.fits'.format(streams, survey))
     
     Ntot = np.int64(np.sum(t['ngaps']))
     x = np.int64(np.linspace(0, 2*Ntot, 100))
@@ -330,7 +339,7 @@ def lcdm_limits(streams='legacy'):
     plt.close()
     plt.figure(figsize=(8.5,5))
     
-    plt.plot(x, scipy.stats.poisson.pmf(x, Ntot), '-', color=mpl.cm.Blues(0.75), lw=5, alpha=0.7)
+    plt.plot(x, scipy.stats.poisson.pmf(x, Ntot), '-', color=mpl.cm.Blues(0.75), lw=5, alpha=0.7, zorder=10)
     
     for e, l in enumerate(levels):
         plt.axvline(l, ls=':', lw=1.5, color='0.4', alpha=0.8)
@@ -346,7 +355,7 @@ def lcdm_limits(streams='legacy'):
     plt.xlabel('Number of gaps in {} streams with LSST'.format(streams))
     
     plt.tight_layout()
-    plt.savefig('lcd_limits_{}.pdf'.format(streams))
+    plt.savefig('lcd_limits_{}_{}.pdf'.format(streams, survey))
 
 
 
