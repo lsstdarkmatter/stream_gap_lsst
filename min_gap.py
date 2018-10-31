@@ -62,6 +62,7 @@ STREAMS = odict([
 
 
 def min_gap_depth(distance_kpc, mu, width_pc, maglim_g, maglim_r, survey='LSST10', lat=60, gap_size=5.0):
+    # from mock_sim.predict_gap_depths
     isoname = 'iso_a12.0_z0.00020.dat'
     mockfile = '%d_deg_mock.fits' % lat
     mockarea = 100
