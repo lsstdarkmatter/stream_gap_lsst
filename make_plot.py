@@ -34,6 +34,9 @@ def wdm_mass(mhalo, h=0.7):
     # return (mhalo * (h / 1e11))**-0.25 # 1512.05349
     return (mhalo / 5.5e10) ** (1 / -3.33)  # 1707.04256
 
+def halo_mass(mwdm, h=0.7):
+    return 5.5e10*(mwdm)**(-3.33)
+
 
 def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w=150., b=1., maglim=None, lat=60., gap_fill=True):
     output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
@@ -71,16 +74,18 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     ax2.set_ylim(mn, mx)
     ax2.set_yscale('log')
 
-    plt.fill_between([29.5,33.5],[2.95,2.95],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.7, hatch ='/') # MW satellite constraint
-    plt.fill_between([29.5,33.5],[5.30,5.30],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.7, hatch='\\') # Lyman alpha constraint
-
     ticks = ax1.get_yticks()
     wdm = wdm_mass(np.asarray(ticks))
     labels = [r'$%.2f$' % t for t in wdm]
     ax2.set_yticklabels(labels)
-
     ax2.set_ylabel(r'$m_{\mathrm{WDM}\ \mathrm{(keV)}}$')
+    mn2, mx2= ax2.get_ylim()
+    #ax2.fill_between([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch ='/') # MW satellite constraint
+    #ax2.fill_between([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch='\\') # Lyman alpha constraint
+    plt.plot([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)], c='0.5', lw=2, linestyle = '--', label='MW satellites')
+    plt.plot([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)], c='0.5', lw=2, linestyle = '-', label = r'Lyman $\alpha$')
 
+    plt.xlim(29.9,33.1)
     plt.legend(loc='upper left', fontsize=15)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
     plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)
@@ -88,7 +93,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     plt.tight_layout()
     if filename is not None:
         plt.savefig('%s.png' % filename)
-
+    plt.show()
 
 if __name__ == "__main__":
     final_plot()
