@@ -61,7 +61,7 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                                 if len(impact_parameters) > 1:
                                     label += r'$ b =  %d \mathrm{r_s}$' % b
                                 if len(maglims) > 1:
-                                    label += r'$\mathrm{ maglim =} %.1$' % maglim
+                                    label += r'$\mathrm{ maglim =} %.1f$' % maglim
                                 if len(latitudes) > 1:
                                     label += r'$\mathrm{ lat = %d}$' % lat
                                 if len(surveys) > 1:
