@@ -35,7 +35,7 @@ def wdm_mass(mhalo, h=0.7):
     return (mhalo / 5.5e10) ** (1 / -3.33)  # 1707.04256
 
 
-def final_plot(filename, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w=150., b=1., maglim=None, lat=60., gap_fill=True):
+def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w=150., b=1., maglim=None, lat=60., gap_fill=True):
     output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
 
     colors = ['cornflowerblue', 'seagreen', 'darkslateblue']
@@ -86,7 +86,8 @@ def final_plot(filename, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w
     plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)
     plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
     plt.tight_layout()
-    plt.savefig('%s.png' % filename)
+    if filename is not None:
+        plt.savefig('%s.png' % filename)
 
 
 if __name__ == "__main__":
