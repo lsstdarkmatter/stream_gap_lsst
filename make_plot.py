@@ -71,8 +71,8 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     ax2.set_ylim(mn, mx)
     ax2.set_yscale('log')
 
-    plt.fill_between([29.5,33.5],[2.95,2.95],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.7, hatch ='/') # MW satellite constraint
-    plt.fill_between([29.5,33.5],[5.30,5.30],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.7, hatch='\\') # Lyman alpha constraint
+    plt.fill_between([29.5, 33.5], [2.95, 2.95], [mx, mx], facecolor='none', edgecolor='k', alpha=0.7, hatch='/')  # MW satellite constraint
+    plt.fill_between([29.5, 33.5], [5.30, 5.30], [mx, mx], facecolor='none', edgecolor='k', alpha=0.7, hatch='\\')  # Lyman alpha constraint
 
     ticks = ax1.get_yticks()
     wdm = wdm_mass(np.asarray(ticks))
