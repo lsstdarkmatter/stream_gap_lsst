@@ -68,6 +68,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
         plt.semilogy(mus, ret20, 'o-', label=label, c=colors[i])  # label='d = %d, w = %d, b = %d' % (distance, w, b)
         plt.fill_between(mus, ret10, ret40, alpha=0.2, color=colors[i])
 
+    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
     ax1 = plt.gca()
     ax2 = ax1.twinx()
     mn, mx = ax1.get_ylim()
@@ -89,7 +90,6 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     plt.legend(loc='upper left', fontsize=15)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
     plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)
-    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
     plt.tight_layout()
     if filename is not None:
         plt.savefig('%s.png' % filename)
