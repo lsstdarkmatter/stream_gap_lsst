@@ -87,5 +87,4 @@ def final_plot(filename, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w
 
 
 if __name__ == "__main__":
-    plot_pretty()
-    plot_gap_fill_times()
+    final_plot()
