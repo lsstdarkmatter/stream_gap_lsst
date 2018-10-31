@@ -264,7 +264,7 @@ def find_gap_size_depth(mass, dist, maxt=1, **kwargs):
 
 
 def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
-                       timpact=1, gap_fill=True, mockfile='stream_gap_mock.fits', **kwargs):
+                       timpact=1, gap_fill=True, mockfile='stream_gap_mock.fits', fixed_size=None, **kwargs):
     """
     Arguments:
     ---------
@@ -327,7 +327,11 @@ def predict_gap_depths(mu, distance_kpc, survey, width_pc=20, maglim=None,
     N = len(gap_sizes_deg)
     detfracs = np.zeros(N)
     for i in range(N):
-        area = 2 * width_deg * gap_sizes_deg[i]
+        if fixed_size == None:
+            area = 2 * width_deg * gap_sizes_deg[i]
+        else:
+            print 'using fixed gap size of %.2f' % fixed_size
+            area = 2 * width_deg * fixed_size
         # twice the width and the length of the gap
         nbg = dens_bg * area
         nstr = dens_stream * area
