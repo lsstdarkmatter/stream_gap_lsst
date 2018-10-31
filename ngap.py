@@ -8,6 +8,7 @@ import astropy.units as u
 from astropy.constants import G
 from astropy.table import Table
 import scipy
+import gala.potential as gp
 
 from mass_size import *
 
@@ -214,43 +215,58 @@ def test_sampling():
 
 
 def input_legacy():
-    """"""
+    """Compile stream input parameters for legacy streams from Erkal+2016"""
     
     streams = ['gd1', 'pal5', 'tri', 'atlas', 'phoenix', 'styx']
     length = np.array([9, 9, 12, 6, 4, 50]) * u.kpc
-    tmax = np.array([7.7, 3.4, 9.3, 2.1, 1.8, 13]) * u.Gyr
+    age = np.array([7.7, 3.4, 9.3, 2.1, 1.8, 13]) * u.Gyr
     r = np.array([19, 13, 40, 22, 19, 45]) * u.kpc
     vcirc = np.array([220, 220, 190, 220, 220, 190]) * u.km/u.s
     nsub = np.array([8.66e-4, 1.01e-3, 5.51e-4, 8.06e-4, 8.66e-4, 5.01e-4]) * (u.kpc)**-3
     fcut = np.ones(np.size(nsub)) * 0.75
     
-    t = Table([streams, length, tmax, r, vcirc, nsub, fcut], names=('name', 'length', 'age', 'rgal', 'vcirc', 'nsub', 'fcut'))
+    t = Table([streams, length, age, r, vcirc, nsub, fcut], names=('name', 'length', 'age', 'rgal', 'vcirc', 'nsub', 'fcut'))
     t.pprint()
     
     t.write('legacy_streams.fits', overwrite=True)
 
-def ngaps_perstream(length, tmax, r, vcirc, nsub, fcut, xmin=10**5, xmax=10**9, n=1.9, Nmass=50000, bmax=5*u.kpc, sigma=180*u.km/u.s, vmin=-1000*u.km/u.s, vmax=1000*u.km/u.s, seed=542734, N=1000):
-    """"""
+def input_des():
+    """Compile stream input parameters for DES streams from Shipp+2018"""
     
-    #length = 9 * u.kpc
-    #tmax = 7.7 * u.Gyr
-    #r = 19 * u.kpc
-    #vcirc = 220 * u.km/u.s
-    #nsub = 8.66e-4 * (u.kpc)**-3
+    tin = Table.read('des_raw.txt', format='ascii.commented_header', delimiter=' ')
+    tin.pprint()
+    
+    streams = tin['Name']
+    length = tin['Length'] * u.kpc
+    r = tin['Rgal'] * u.kpc
+    
+    # get circular velocity
+    ham = gp.Hamiltonian(gp.MilkyWayPotential())
+    xyz = np.array([r.value, np.zeros_like(r.value), np.zeros_like(r.value)]) * r.unit
+    vcirc = ham.potential.circular_velocity(xyz)
+    
+    # get age
+    M = vcirc**2 * r / G
+    m = tin['Mprog']*1e4*u.Msun
+    age = ((tin['l']*u.deg).to(u.radian).value / (2**(2/3) * (m/M)**(1/3) * np.sqrt(G*M/r**3))).to(u.Gyr)
+    
+    # get subhalo density
+    a = 0.678
+    r2 = 162.4 * u.kpc
+    n = -1.9
+    m0 = 2.52e7 * u.Msun
+    m1 = 1e6 * u.Msun
+    m2 = 1e7 * u.Msun
+    cdisk = 2.02e-13 * (u.kpc)**-3 * u.Msun**-1
+    nsub = cdisk * np.exp(-2/a*((r/r2)**a-1)) * m0/(n+1) * ((m2/m0)**(n+1) - (m1/m0)**(n+1))
+    
+    # replace with actual LSST estimates
+    fcut = np.ones(np.size(length)) * 0.75
+    
 
-    ## subhalo mass parameters
-    #xmin = 10**5
-    #xmax = 10**9
-    #n = 1.9
-    #Nmass = 50000
-    
-    ## impact parameters
-    #bmax = 5 * u.kpc
-    
-    ## velocity parameters
-    #sigma = 180 * u.km/u.s
-    #vmin = -1000*u.km/u.s
-    #vmax = 1000*u.km/u.s
+
+def ngaps_perstream(length, tmax, r, vcirc, nsub, fcut, xmin=10**5, xmax=10**9, n=1.9, Nmass=50000, bmax=5*u.kpc, sigma=180*u.km/u.s, vmin=-1000*u.km/u.s, vmax=1000*u.km/u.s, seed=542734, N=1000):
+    """Calculate the number of observable gaps for a given stream"""
     
     np.random.seed(seed)
     # sample encounter times
@@ -321,7 +337,6 @@ def lcdm_limits(streams='legacy'):
         txt = plt.text(l, yhalf, '{:g}%'.format(q[e]*100), rotation=90, va='center', ha='center', fontsize='small')
         txt.set_bbox(dict(facecolor='w', alpha=1, ec='none'))
     
-    #plt.text(Ntot, ytop*1.1, 'Consistent with $\Lambda$CDM', ha='center')
     plt.title('Consistent with $\Lambda$CDM', fontsize='medium')
     
     for s in ['left', 'top', 'right']:
@@ -331,6 +346,7 @@ def lcdm_limits(streams='legacy'):
     plt.xlabel('Number of gaps in {} streams with LSST'.format(streams))
     
     plt.tight_layout()
+    plt.savefig('lcd_limits_{}.pdf'.format(streams))
 
 
 
