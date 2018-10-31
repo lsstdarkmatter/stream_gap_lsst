@@ -83,8 +83,8 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     mn2, mx2= ax2.get_ylim()
     #ax2.fill_between([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch ='/') # MW satellite constraint
     #ax2.fill_between([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch='\\') # Lyman alpha constraint
-    plt.plot([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)], c='0.5', lw=2, linestyle = '--', label='MW satellites')
-    plt.plot([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)], c='0.5', lw=2, linestyle = '-', label = r'Lyman $\alpha$')
+    plt.plot([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)], c='0.5', lw=2, linestyle = '--', label=r'$\mathrm{MW\ satellites}$')
+    plt.plot([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)], c='0.5', lw=2, linestyle = '-', label = r'$\mathrm{Lyman}\ \alpha}$')
 
     plt.xlim(29.9,33.1)
     plt.legend(loc='upper left', fontsize=15)
