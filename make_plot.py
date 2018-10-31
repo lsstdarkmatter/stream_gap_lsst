@@ -34,8 +34,9 @@ def wdm_mass(mhalo, h=0.7):
     # return (mhalo * (h / 1e11))**-0.25 # 1512.05349
     return (mhalo / 5.5e10) ** (1 / -3.33)  # 1707.04256
 
+
 def halo_mass(mwdm, h=0.7):
-    return 5.5e10*(mwdm)**(-3.33)
+    return 5.5e10 * (mwdm)**(-3.33)
 
 
 def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w=150., b=1., maglim=None, lat=60., gap_fill=True):
@@ -68,6 +69,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
         plt.semilogy(mus, ret20, 'o-', label=label, c=colors[i])  # label='d = %d, w = %d, b = %d' % (distance, w, b)
         plt.fill_between(mus, ret10, ret40, alpha=0.2, color=colors[i])
 
+    plt.legend(loc='upper left', fontsize=15)
     plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
     ax1 = plt.gca()
     ax2 = ax1.twinx()
@@ -80,14 +82,13 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     labels = [r'$%.2f$' % t for t in wdm]
     ax2.set_yticklabels(labels)
     ax2.set_ylabel(r'$m_{\mathrm{WDM}\ \mathrm{(keV)}}$')
-    mn2, mx2= ax2.get_ylim()
-    #ax2.fill_between([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch ='/') # MW satellite constraint
-    #ax2.fill_between([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch='\\') # Lyman alpha constraint
-    plt.plot([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)], c='0.5', lw=2, linestyle = '--', label=r'$\mathrm{MW\ satellites}$')
-    plt.plot([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)], c='0.5', lw=2, linestyle = '-', label = r'$\mathrm{Lyman}\ \alpha$')
+    mn2, mx2 = ax2.get_ylim()
+    # ax2.fill_between([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch ='/') # MW satellite constraint
+    # ax2.fill_between([29.5,33.5],[halo_mass(5.30),halo_mass(5.30)],[mx,mx], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch='\\') # Lyman alpha constraint
+    plt.plot([29.5, 33.5], [halo_mass(2.95), halo_mass(2.95)], c='0.5', lw=2, linestyle='--', label=r'$\mathrm{MW\ satellites}$')
+    plt.plot([29.5, 33.5], [halo_mass(5.30), halo_mass(5.30)], c='0.5', lw=2, linestyle='-', label=r'$\mathrm{Lyman}\ \alpha$')
 
-    plt.xlim(29.9,33.1)
-    plt.legend(loc='upper left', fontsize=15)
+    plt.xlim(29.9, 33.1)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
     plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)
     plt.tight_layout()
