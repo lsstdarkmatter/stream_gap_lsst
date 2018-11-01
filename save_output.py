@@ -18,15 +18,15 @@ import mock_sim
 import simple_stream_model
 
 
-def save_output(mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True, **kwargs):
-    if os.path.exists('output.txt'):
+def save_output(filename='output.txt', mus=[30.], distances=[20.], velocities=[150.], impact_parameters=[1.], maglims=[None], latitudes=[60.], surveys=['LSST'], gap_fill=True, **kwargs):
+    if os.path.exists(filename):
         pass
     else:
-        output_file = open('output.txt', 'w')
+        output_file = open(filename, 'w')
         output_file.write('# distance (kpc), flyby_velocity (km/s), impact_parameter (r_s), magnitude_limit (mag), latitude (deg), gap_fill (True/False), survey, surface_brightness (mag/arcsec^2), minimum_mass (M_sun)\n')
         output_file.close()
 
-    output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
+    output = np.genfromtxt(filename, unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
 
     for survey in surveys:
         for lat in latitudes:
@@ -37,13 +37,13 @@ def save_output(mus=[30.], distances=[20.], velocities=[150.], impact_parameters
 
                             ret = []
                             if maglim == None:
-                                maglim = mock_sim.getMagLimit('g', survey)
+                                maglim_label = mock_sim.getMagLimit('g', survey)
 
                             for mu in mus:
                                 # print mu, distance, w, b, maglim, lat, survey
                                 # check if output already saved for these params
                                 idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
-                                    maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+                                    maglim_label, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
                                 if np.sum(idx) > 0:
                                     print 'Output exists'
                                     continue
@@ -61,8 +61,8 @@ def save_output(mus=[30.], distances=[20.], velocities=[150.], impact_parameters
                                 R = scipy.optimize.root(II1, 6)
                                 ret.append(10**R['x'])
 
-                                with open('output.txt', 'a') as output_file:
-                                    output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %d, %s, %.2f, %.2f\n' % (distance, w, b, maglim, lat, gap_fill, survey, mu, ret[-1]))
+                                with open(filename, 'a') as output_file:
+                                    output_file.write('%.2f, %.2f, %.2f, %.2f, %.2f, %d, %s, %.2f, %.2f\n' % (distance, w, b, maglim_label, lat, gap_fill, survey, mu, ret[-1]))
 
 
 if __name__ == "__main__":

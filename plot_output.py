@@ -59,7 +59,7 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                                 if len(velocities) > 1:
                                     label += r'$ w = %d \mathrm{km/s}$' % w
                                 if len(impact_parameters) > 1:
-                                    label += r'$ b =  %d \mathrm{r_s}$' % b
+                                    label += r'$ b = %d \mathrm{r_s}$' % b
                                 if len(maglims) > 1:
                                     label += r'$\mathrm{ maglim =} %.1f$' % maglim
                                 if len(latitudes) > 1:
