@@ -38,6 +38,8 @@ def save_output(filename='output.txt', mus=[30.], distances=[20.], velocities=[1
                             ret = []
                             if maglim == None:
                                 maglim_label = mock_sim.getMagLimit('g', survey)
+                            else:
+                                maglim_label = maglim
 
                             for mu in mus:
                                 # print mu, distance, w, b, maglim, lat, survey
