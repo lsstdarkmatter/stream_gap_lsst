@@ -42,12 +42,14 @@ def save_output(filename='output.txt', mus=[30.], distances=[20.], velocities=[1
                             for mu in mus:
                                 # print mu, distance, w, b, maglim, lat, survey
                                 # check if output already saved for these params
-                                idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
-                                    maglim_label, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
-                                if np.sum(idx) > 0:
-                                    print 'Output exists'
-                                    continue
-
+                                try:
+                                    idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
+                                        maglim_label, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
+                                    if np.sum(idx) > 0:
+                                        print 'Output exists'
+                                        continue
+                                except:
+                                    pass
                                 mockfile = '%d_deg_mock.fits' % lat
                                 mass, gapt, gapo = mock_sim.predict_gap_depths(mu, distance, survey, width_pc=20, maglim=maglim,
                                                                                timpact=0.5, gap_fill=gap_fill, w=w, X=b, mockfile=mockfile, **kwargs)
