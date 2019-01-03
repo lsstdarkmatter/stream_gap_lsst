@@ -48,7 +48,7 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                             for mu in mus:
                                 idx = (output['dist'] == distance) & (output['w'] == w) & (output['b'] == b) & (output['maglim'] == np.around(
                                     maglim, 2)) & (output['survey'] == survey) & (output['gap_fill'] == gap_fill) & (output['mu'] == mu)
-                                print idx
+                                # print idx
                                 mass = output['mass'][idx][0]
                                 ret.append(mass)
 
@@ -59,9 +59,9 @@ def plot_output(filename, mus=[30.], distances=[20.], velocities=[150.], impact_
                                 if len(velocities) > 1:
                                     label += r'$ w = %d \mathrm{km/s}$' % w
                                 if len(impact_parameters) > 1:
-                                    label += r'$ b =  %d \mathrm{r_s}$' % b
+                                    label += r'$ b = %d \mathrm{r_s}$' % b
                                 if len(maglims) > 1:
-                                    label += r'$\mathrm{ maglim =} %d$' % maglim
+                                    label += r'$\mathrm{ maglim =} %.1f$' % maglim
                                 if len(latitudes) > 1:
                                     label += r'$\mathrm{ lat = %d}$' % lat
                                 if len(surveys) > 1:
