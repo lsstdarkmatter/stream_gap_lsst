@@ -79,6 +79,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     mn, mx = ax1.get_ylim()
     ax2.set_ylim(mn, mx)
     ax2.set_yscale('log')
+    ax2.minorticks_off()
 
     ticks = ax1.get_yticks()
     wdm = wdm_mass(np.asarray(ticks))
@@ -88,17 +89,17 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     mn2, mx2 = ax2.get_ylim()
     ax2.fill_between([29.5,33.5],[halo_mass(2.95),halo_mass(2.95)],[3e8,3e8], facecolor= 'none', edgecolor='k', alpha = 0.3, hatch ='/', lw=2, zorder=4) # MW satellite constraint
     #plt.plot([29.5, 33.5], [halo_mass(2.95), halo_mass(2.95)], c='0.5', lw=2, linestyle='-')#, label=r'$\mathrm{MW\ satellites}$')
-    plt.text(30.45,6e8,r'$\mathrm{MW\ satellites}$', horizontalalignment='center', verticalalignment='center', size=10,bbox=dict(facecolor='white', alpha=1, edgecolor=None),zorder=-1)
+    plt.text(30.45,6e8,r'$\mathrm{MW\ satellites}$', horizontalalignment='center', verticalalignment='center', size=10,bbox=dict(facecolor='white', alpha=1, edgecolor='none'),zorder=-1)
 
 
     plt.plot([29.5, 33.5], [halo_mass(5.30), halo_mass(5.30)], c='0.5', lw=2, linestyle='-',zorder=1)#, label=r'$\mathrm{Lyman}\ \alpha$')
     
-    plt.text(30.45,halo_mass(5.30),r'$\mathrm{Lyman}\ \alpha$', horizontalalignment='center', verticalalignment='center', size=10,bbox=dict(facecolor='white', alpha=1, edgecolor=None),zorder=2)
+    plt.text(30.45,halo_mass(5.30),r'$\mathrm{Lyman}\ \alpha$', horizontalalignment='center', verticalalignment='center', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=2)
     #plt.plot([31.9,31.9], [mn2,mx2], c='0.5', lw=2, linestyle='--')#, label=r'$\mathrm{MW\ satellites}$')
     #plt.plot([33.0,33.0], [mn2,mx2], c='0.5', lw=2, linestyle='--')#, label=r'$\mathrm{Lyman}\ \alpha$')
-    plt.text(31,3e4,r'$\mathrm{GD-1}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, edgecolor=None),zorder=-10)
-    plt.text(32,3e4,r'$\mathrm{Indus}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, edgecolor=None),zorder=-1)
-    plt.text(33,3e4,r'$\mathrm{ATLAS}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, edgecolor=None),zorder=-1)
+    plt.text(31,3e4,r'$\mathrm{GD-1}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=0, ec='none'),zorder=-10)
+    plt.text(32,3e4,r'$\mathrm{Indus}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=-1)
+    plt.text(33,3e4,r'$\mathrm{ATLAS}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=-1)
 
     plt.xlim(29.9, 33.1)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
