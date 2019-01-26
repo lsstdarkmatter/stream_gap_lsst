@@ -32,12 +32,20 @@ plt.rc('ytick.minor', pad=5)
 def wdm_mass(mhalo, h=0.7):
     # input solar mass, return keV
     # return (mhalo * (h / 1e11))**-0.25 # 1512.05349
-    return (mhalo / 5.5e10) ** (1 / -3.33)  # 1707.04256
+    #return (mhalo / 5.5e10) ** (1 / -3.33)  # 1707.04256
+
+    #Ethan's new relation
+    #result in kev
+    mwdm = 2.9 * (mhalo/1e9)**-0.264
+    return mwdm
 
 
 def halo_mass(mwdm, h=0.7):
-    return 5.5e10 * (mwdm)**(-3.33)
+    #return 5.5e10 * (mwdm)**(-3.33)
 
+    #Ethan's new relation
+    mhalo = ((mwdm/2.9)**(1/-0.264))*1e9
+    return mhalo
 
 def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10'], w=150., b=1., maglim=None, lat=60., gap_fill=True):
     output = np.genfromtxt('output.txt', unpack=True, delimiter=', ', dtype=None, names=['dist', 'w', 'b', 'maglim', 'lat', 'gap_fill', 'survey', 'mu', 'mass'], encoding='bytes')
@@ -71,7 +79,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
         plt.fill_between(mus, ret10, ret40, alpha=0.2, color=colors[i],zorder=0)
 
     plt.legend(loc='upper left', fontsize=12)
-    plt.ylabel(r'$M_{\mathrm{halo}}\ \mathrm{(M_{\odot})}$',)
+    plt.ylabel(r'$M_{\mathrm{vir}}(z=0)\ \mathrm{(M_{\odot})}$',)
     plt.xlabel(r'$\mu\ \mathrm{(mag/arcsec^2)}$',)
     ax1 = plt.gca()
     ax2 = ax1.twinx()
@@ -97,7 +105,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     plt.text(30.45,halo_mass(5.30),r'$\mathrm{Lyman}\ \alpha$', horizontalalignment='center', verticalalignment='center', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=2)
     #plt.plot([31.9,31.9], [mn2,mx2], c='0.5', lw=2, linestyle='--')#, label=r'$\mathrm{MW\ satellites}$')
     #plt.plot([33.0,33.0], [mn2,mx2], c='0.5', lw=2, linestyle='--')#, label=r'$\mathrm{Lyman}\ \alpha$')
-    plt.text(31,3e4,r'$\mathrm{GD-1}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=0, ec='none'),zorder=-10)
+    #plt.text(31,3e4,r'$\mathrm{GD-1}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=0, ec='none'),zorder=-10)
     plt.text(32,3e4,r'$\mathrm{Indus}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=-1)
     plt.text(33,3e4,r'$\mathrm{ATLAS}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=-1)
 
