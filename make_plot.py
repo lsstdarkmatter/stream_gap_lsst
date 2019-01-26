@@ -11,6 +11,7 @@ import astropy.units as auni
 import stream_num_cal as snc
 import simple_stream_model as sss
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import scipy.interpolate
 import scipy.optimize
 
@@ -91,7 +92,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
 
     ticks = ax1.get_yticks()
     wdm = wdm_mass(np.asarray(ticks))
-    labels = [r'$%.2f$' % t for t in wdm]
+    labels = [r'$%.1f$' % t for t in wdm]
     ax2.set_yticklabels(labels)
     ax2.set_ylabel(r'$m_{\mathrm{WDM}\ \mathrm{(keV)}}$')
     mn2, mx2 = ax2.get_ylim()
@@ -108,6 +109,7 @@ def final_plot(filename=None, mus=[30., 31., 32., 33.], surveys=['SDSS', 'LSST10
     #plt.text(31,3e4,r'$\mathrm{GD-1}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=0, ec='none'),zorder=-10)
     plt.text(32,3e4,r'$\mathrm{Indus}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=-1)
     plt.text(33,3e4,r'$\mathrm{ATLAS}$',rotation=90., horizontalalignment='center', verticalalignment='bottom', size=10,bbox=dict(facecolor='white', alpha=1, ec='none'),zorder=-1)
+
 
     plt.xlim(29.9, 33.1)
     plt.title(r'$\mathrm{Minimum\ Detectable\ Halo\ Mass}$')
