@@ -137,6 +137,58 @@ def sample_pdf(pdf, xmin, xmax, size=1, N=10000, args=[]):
     
     return x
 
+def get_nsub(r=20*u.kpc, m1=1e5*u.Msun, m2=1e9*u.Msun, f=0.11):
+    """"""
+    
+    #r = 20*u.kpc
+    
+    # get subhalo density
+    a = 0.678
+    r2 = 162.4 * u.kpc
+    n = -1.9
+    m0 = 2.52e7 * u.Msun
+    #m1 = 1e6 * u.Msun
+    #m2 = 1e7 * u.Msun
+    #f = 1.
+    #m1 = 1e5 * u.Msun
+    #m2 = 1e9 * u.Msun
+    #f = 0.11
+    cdisk = 2.02e-13 * (u.kpc)**-3 * u.Msun**-1
+    nsub = f * cdisk * np.exp(-2/a*((r/r2)**a-1)) * m0/(n+1) * ((m2/m0)**(n+1) - (m1/m0)**(n+1))
+    
+    return nsub
+
+def test_nsub():
+    """"""
+    
+    r = 20*u.kpc
+    
+    #get subhalo density
+    a = 0.678
+    r2 = 162.4 * u.kpc
+    n = -1.9
+    m0 = 2.52e7 * u.Msun
+    #m1 = 1e6 * u.Msun
+    #m2 = 1e7 * u.Msun
+    #f = 1.
+    m1 = 1e5 * u.Msun
+    m2 = 1e9 * u.Msun
+    f = 0.11
+    cdisk = 2.02e-13 * (u.kpc)**-3 * u.Msun**-1
+    
+    m2 = np.logspace(5,9,10)*u.Msun
+    
+    nsub = f * cdisk * np.exp(-2/a*((r/r2)**a-1)) * m0/(n+1) * ((m2/m0)**(n+1) - (m1/m0)**(n+1))
+    
+    plt.close()
+    plt.figure()
+    
+    plt.plot(m2, nsub, 'k-')
+    
+    plt.gca().set_xscale('log')
+    plt.gca().set_yscale('log')
+    
+    plt.tight_layout()
 
 def test_velocities(seed=39862):
     """"""
@@ -170,7 +222,10 @@ def test_mass(seed=2348):
     a0 = 1.77e-5
     m0 = 2.52e7
     n = 1.9
-    m0 = 1e5
+    #m0 = 1e5
+    
+    norm = a0*m0**n
+    print(norm)
     
     N = 10000
     np.random.seed(seed)
@@ -181,7 +236,7 @@ def test_mass(seed=2348):
     
     plt.close()
     
-    plt.hist(m, bins=20, normed=True, log=True)
+    plt.hist(m, bins=20, density=True, log=True)
     plt.plot(m_array, pdf_mass(m_array, n, xmin, xmax))
     
     plt.gca().set_xscale('log')
@@ -206,7 +261,7 @@ def test_sampling():
     x = np.argmin(np.abs(vr), axis=1)*h + xmin
     
     plt.close()
-    plt.hist(x, normed=True, bins=20)
+    plt.hist(x, density=True, bins=20)
     
     x_ = np.linspace(-5,5,1000)
     y_ = pdf_norm(x_, 0, 1)
@@ -321,8 +376,83 @@ def get_gaps(streams='legacy', survey='0.75', N=1000):
     print(np.sum(ngaps))
     
     tout.write('ngaps_lcdm_{}_{}.fits'.format(streams, survey), overwrite=True)
+    
+def get_gaps_mass(streams='DES', survey='LSST10', N=1000):
+    """Get the number of detectable gaps per stream for different choices of low-mass cut-off"""
+    
+    t = Table.read('{}_streams_{}.fits'.format(streams, survey))
+    Nstream = len(t)
+    ngaps = np.zeros(Nstream)
+    
+    xmin = np.logspace(5,8,30)
+    for e, xm in enumerate(xmin):
+        for i in range(Nstream):
+            t_ = t[i]
+            nsub = get_nsub(r=t_['rgal']*t['rgal'].unit, m1=xm*u.Msun)
+            ngaps[i] = ngaps_perstream(t_['length']*t['length'].unit, t_['age']*t['age'].unit, t_['rgal']*t['rgal'].unit, t_['vcirc']*t['vcirc'].unit, nsub, t_['fcut'], N=N, xmin=xm)
+            #ngaps[i] = ngaps_perstream(t_['length']*t['length'].unit, t_['age']*t['age'].unit, t_['rgal']*t['rgal'].unit, t_['vcirc']*t['vcirc'].unit, t_['nsub']*t['nsub'].unit, t_['fcut'], N=N, xmin=xm)
+        
+        tout = Table([t['name'], ngaps], names=('name', 'ngaps'))
+        #tout.pprint()
+        print(xm, np.sum(ngaps))
+        
+        tout.write('ngaps_lcdm_{}_{}_{:.2g}.fits'.format(streams, survey, xm), overwrite=True)
 
-def lcdm_limits(streams='legacy', survey='0.75'):
+def ngap_mcutoff(streams='DES', survey='LSST10'):
+    """"""
+    
+    xmin = np.logspace(5,8,30)
+    ngap = np.zeros_like(xmin)
+    n0 = np.zeros_like(xmin)
+    n1 = np.zeros_like(xmin)
+    n2 = np.zeros_like(xmin)
+    n3 = np.zeros_like(xmin)
+    
+    mdm = 3.33 * (xmin*1e-9)**-0.3
+    
+    for e, xm in enumerate(xmin):
+        t = Table.read('ngaps_lcdm_{}_{}_{:.2g}.fits'.format(streams, survey, xm))
+        ngap[e] = np.sum(t['ngaps'])
+        
+        q = [0.001, 0.05, 0.95, 0.999]
+        levels = scipy.stats.poisson.ppf(q, ngap[e])
+        n0[e] = levels[0]
+        n1[e] = levels[1]
+        n2[e] = levels[2]
+        n3[e] = levels[3]
+    
+    plt.close()
+    plt.figure(figsize=(8,5.5))
+    
+    plt.fill_between(xmin, n0, n3, color='w', label='')
+    plt.fill_between(xmin, n0, n3, color=mpl.cm.OrRd_r(0.6), alpha=0.65, label='0.1 $-$ 99.9\npercentile')
+    plt.fill_between(xmin, n1, n2, color='w', label='')
+    plt.fill_between(xmin, n1, n2, color=mpl.cm.OrRd_r(0.3), alpha=0.65, label='5 $-$ 95\npercentile')
+    
+    plt.plot(xmin, ngap, '-', color=mpl.cm.OrRd_r(0.), lw=3, alpha=0.65, label='Expectation')
+    
+    plt.legend(frameon=False)
+    plt.gca().set_xscale('log')
+    plt.xlabel('$M_{cut}$ [$M_\odot$]')
+    plt.ylabel('Number of gaps')
+    
+    ax1 = plt.gca()
+    ax2 = ax1.twiny()
+    
+    values = np.array([50, 25, 14, 7,])
+    locations = 5.5e10 * values**-3.33
+    labels = ['{:}'.format(v) for v in values]
+
+    ax2.set_xlim(ax1.get_xlim())
+    ax2.set_xscale('log')
+    ax2.get_xaxis().set_tick_params(which='minor', size=0)
+    ax2.set_xticks(locations)
+    ax2.set_xticklabels(labels)
+    ax2.set_xlabel('m$_{WDM}$ [keV]')
+        
+    plt.tight_layout()
+
+def lcdm_limits(streams='legacy', survey='0.75', verbose=False):
     """Show consistency with LCDM as a function of the total number of detected gaps in a set of streams"""
     
     t = Table.read('ngaps_lcdm_{}_{}.fits'.format(streams, survey))
@@ -332,6 +462,7 @@ def lcdm_limits(streams='legacy', survey='0.75'):
     
     q = [0.001, 0.05, 0.95, 0.999]
     levels = scipy.stats.poisson.ppf(q, Ntot)
+    if verbose: print(levels)
     
     ytop = scipy.stats.poisson.pmf(Ntot, Ntot)
     yhalf = 0.5 * ytop
