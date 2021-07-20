@@ -73,7 +73,7 @@ def sample_encounters(N=100, seed=134698, fcut=0.75):
     fig, ax = plt.subplots(1,2, figsize=(10,5))
     
     plt.sca(ax[0])
-    plt.hist(f)
+    plt.hist(f.value)
     plt.xlim(0,1)
     
     plt.sca(ax[1])
